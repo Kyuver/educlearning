@@ -1,7 +1,7 @@
-import Navbar from "../components/Navbar";
-import Hero from "../components/Hero";
-import SubjectCard from "../components/SubjectCard";
-import Footer from "../components/Footer";
+import Navbar from "../_old-kulasrum-wireframe/Navbar";
+import Hero from "../_old-kulasrum-wireframe/Hero";
+import SubjectCard from "../_old-kulasrum-wireframe/SubjectCard";
+import Footer from "../_old-kulasrum-wireframe/Footer";
 const subjects = [
   "MATH",
   "ENGLISH",
