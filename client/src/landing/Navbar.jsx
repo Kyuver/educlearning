@@ -4,24 +4,22 @@ function Navbar() {
       {" "}
       <div className="wrap nav-inner">
         {" "}
-        <div className="logo">
-          <span className="logo-mark">🎓</span> EducLearning
-        </div>{" "}
+        <div className="logo">🎓 KlikAral </div>{" "}
         <ul className="nav-links">
           {" "}
           <li>
-            <a href="#subjects">Subjects</a>
+            <a href="#student-view">Student View</a>
           </li>{" "}
           <li>
-            <a href="#how-it-works">How It Works</a>
+            <a href="#teacher-view">Teacher View</a>
           </li>{" "}
           <li>
-            <a href="#roles">Explore Roles</a>
+            <a href="#admin-view">Admin View</a>
           </li>{" "}
         </ul>{" "}
         <div className="nav-cta">
           {" "}
-          <a href="#roles" className="btn btn-gold">
+          <a href="#roles" className="btn btn-gold btn-sm">
             Demo
           </a>{" "}
         </div>{" "}

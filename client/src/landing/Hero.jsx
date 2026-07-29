@@ -7,22 +7,18 @@ function Hero() {
         <div className="hero-copy">
           {" "}
           <h1>
-            Your Learning
-            <br />
-            Journey <span>Begins Here</span>
+            Where Learning <span>Clicks.</span>
           </h1>{" "}
           <p className="lead">
-            EducLearning brings high school learning to life through
-            interactive, hands-on practice. Master core subjects like English,
-            Math, Science, and Araling Panlipunan by working through lessons,
-            exploring examples, and practicing concepts in real time.
+            Interactive lessons in Math, Science, English, and more — built for
+            Filipino high schoolers.
           </p>{" "}
         </div>{" "}
-        <div className="hero-photo">
+        <div className="hero-image">
           {" "}
           <img
             src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=700&q=80"
-            alt="Student working on a laptop"
+            alt="Student learning on a laptop"
           />{" "}
         </div>{" "}
       </div>{" "}

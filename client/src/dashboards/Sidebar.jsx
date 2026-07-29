@@ -4,7 +4,7 @@ function Sidebar({ subjects, selectedSubjectId, onSelectSubject, topItem }) {
   return (
     <aside className="dsb-sidebar">
       {" "}
-      <div className="dsb-brand">🎓 EducLearning</div>{" "}
+      <div className="dsb-brand">🎓 KlikAral</div>{" "}
       <nav>
         {" "}
         {topItem}{" "}
