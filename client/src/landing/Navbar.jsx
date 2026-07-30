@@ -1,10 +1,19 @@
+import { useState, useEffect } from "react";
 function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    function handleScroll() {
+      setScrolled(window.scrollY > window.innerHeight * 0.85);
+    }
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   return (
-    <header className="nav">
+    <header className={`nav${scrolled ? " scrolled" : ""}`}>
       {" "}
-      <div className="wrap nav-inner">
+      <div className="nav-inner">
         {" "}
-        <div className="logo">🎓 KlikAral </div>{" "}
+        <div className="logo">🎓 KlikAral</div>{" "}
         <ul className="nav-links">
           {" "}
           <li>
@@ -17,12 +26,6 @@ function Navbar() {
             <a href="#admin-view">Admin View</a>
           </li>{" "}
         </ul>{" "}
-        <div className="nav-cta">
-          {" "}
-          <a href="#roles" className="btn btn-gold btn-sm">
-            Demo
-          </a>{" "}
-        </div>{" "}
         <button className="nav-toggle">☰</button>{" "}
       </div>{" "}
     </header>
