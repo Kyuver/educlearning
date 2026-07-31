@@ -1,4 +1,5 @@
 import Sidebar from "./Sidebar";
+
 function DashboardLayout({
   subjects,
   selectedSubjectId,
@@ -7,15 +8,14 @@ function DashboardLayout({
   children,
 }) {
   return (
-    <div className="dsb-layout">
-      {" "}
+    <div className="flex min-h-screen bg-paper font-inter">
       <Sidebar
         subjects={subjects}
         selectedSubjectId={selectedSubjectId}
         onSelectSubject={onSelectSubject}
         topItem={topItem}
-      />{" "}
-      <main className="dsb-main">{children}</main>{" "}
+      />
+      <main className="flex-1 p-10 px-12 flex flex-col">{children}</main>
     </div>
   );
 }
