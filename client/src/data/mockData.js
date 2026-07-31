@@ -13,6 +13,21 @@ export const teacherProfile = {
   subjectIds: [1, 2],
 };
 
+export const teachers = [
+  { id: 1, name: "Maria Santos", avatar: "https://i.pravatar.cc/80?img=32", subjectIds: [1] },
+  { id: 2, name: "Juan Dela Cruz", avatar: "https://i.pravatar.cc/80?img=53", subjectIds: [2] },
+  { id: 3, name: "Ana Reyes", avatar: "https://i.pravatar.cc/80?img=47", subjectIds: [3] },
+  { id: 4, name: "Carlo Mendoza", avatar: "https://i.pravatar.cc/80?img=12", subjectIds: [4] },
+  { id: 5, name: "Bella Flores", avatar: "https://i.pravatar.cc/80?img=5", subjectIds: [5] },
+  { id: 6, name: "Ken Garcia", avatar: "https://i.pravatar.cc/80?img=61", subjectIds: [6] },
+];
+
+export const invitations = [
+  { id: 1, teacherId: 1, course: "Computer Literacy", status: "pending", sentAt: "Just now" },
+  { id: 2, teacherId: 3, course: "Science 5", status: "pending", sentAt: "5 minutes ago" },
+  { id: 3, teacherId: 6, course: "Technology and Livelihood Education", status: "pending", sentAt: "1 hour ago" },
+];
+
 export const studentProfile = { name: "Demo Student", sectionId: 1 };
 
 export const topics = [
