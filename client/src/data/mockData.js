@@ -12,6 +12,9 @@ export const teacherProfile = {
   sectionId: 1,
   subjectIds: [1, 2],
 };
+
+export const studentProfile = { name: "Demo Student", sectionId: 1 };
+
 export const topics = [
   {
     id: 1,
@@ -22,7 +25,9 @@ export const topics = [
     teacherAvatar: "https://i.pravatar.cc/80?img=32",
     content:
       "A fraction represents a part of a whole. For example, 1/2 means one part out of two equal parts. Fractions are made up of a numerator (top number) and a denominator (bottom number).",
-    status: "approved"
+    status: "approved",
+    lessonPlan:
+      "Objective: Students will identify numerators and denominators. Materials: Fraction strips, whiteboard. Activity: Students group into pairs and use fraction strips to represent given fractions. Assessment: 5-item board work.",
   },
   {
     id: 2,
@@ -32,7 +37,8 @@ export const topics = [
     teacherName: "Maria Santos",
     teacherAvatar: "https://i.pravatar.cc/80?img=32",
     content: "Lesson content coming soon.",
-    status: "approved"
+    status: "approved",
+    lessonPlan: "Lesson content coming soon.",
   },
   {
     id: 3,
@@ -42,7 +48,8 @@ export const topics = [
     teacherName: "Maria Santos",
     teacherAvatar: "https://i.pravatar.cc/80?img=32",
     content: "Lesson content coming soon.",
-    status: "pending"
+    status: "pending",
+    lessonPlan: "Lesson content coming soon.",
   },
   {
     id: 4,
@@ -52,7 +59,8 @@ export const topics = [
     teacherName: "Juan Dela Cruz",
     teacherAvatar: "https://i.pravatar.cc/80?img=53",
     content: "Lesson content coming soon.",
-    status: "approved"
+    status: "approved",
+    lessonPlan: "Lesson content coming soon.",   
   },
   {
     id: 5,
@@ -62,7 +70,8 @@ export const topics = [
     teacherName: "Juan Dela Cruz",
     teacherAvatar: "https://i.pravatar.cc/80?img=53",
     content: "Lesson content coming soon.",
-    status: "pending"
+    status: "pending",
+    lessonPlan: "Lesson content coming soon.",
   },
   {
     id: 6,
@@ -72,7 +81,8 @@ export const topics = [
     teacherName: "Ana Reyes",
     teacherAvatar: "https://i.pravatar.cc/80?img=47",
     content: "Lesson content coming soon.",
-    status: "approved"
+    status: "approved",
+    lessonPlan: "Lesson content coming soon.",
   },
   {
     id: 7,
@@ -82,7 +92,8 @@ export const topics = [
     teacherName: "Ana Reyes",
     teacherAvatar: "https://i.pravatar.cc/80?img=47",
     content: "Lesson content coming soon.",
-    status: "denied"
+    status: "denied",
+    lessonPlan: "Lesson content coming soon.",
   },
   {
     id: 8,
@@ -92,7 +103,8 @@ export const topics = [
     teacherName: "Carlo Mendoza",
     teacherAvatar: "https://i.pravatar.cc/80?img=12",
     content: "Lesson content coming soon.",
-    status: "pending"
+    status: "pending",
+    lessonPlan: "Lesson content coming soon.",
   },
   {
     id: 9,
@@ -112,7 +124,8 @@ export const topics = [
     teacherName: "Ken Garcia",
     teacherAvatar: "https://i.pravatar.cc/80?img=61",
     content: "Lesson content coming soon.",
-    status: "denied"
+    status: "denied",
+    lessonPlan: "Lesson content coming soon.",
   },
 ];
 export const quizzes = [
