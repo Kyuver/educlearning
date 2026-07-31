@@ -397,16 +397,8 @@ function StudentDashboard() {
             </div>
           )}{" "}
           {selectedTopic && !takingQuiz && (
-            <div className="bg-white rounded-md border border-[#ece7f5] overflow-hidden max-w-2xl">
+            <div className="bg-white rounded-md border border-[#ece7f5] overflow-hidden">
               {" "}
-              <div className="h-56 w-full overflow-hidden">
-                {" "}
-                <img
-                  src={selectedTopic.coverImage}
-                  alt={selectedTopic.title}
-                  className="h-full w-full object-cover"
-                />{" "}
-              </div>{" "}
               <div className="p-6">
                 {" "}
                 <button
@@ -418,7 +410,7 @@ function StudentDashboard() {
                 <h2 className="font-sora font-semibold text-xl text-ink">
                   {selectedTopic.title}
                 </h2>{" "}
-                <div className="flex items-center gap-2 mt-2 mb-4">
+                <div className="flex items-center gap-2 mt-2 mb-6">
                   {" "}
                   <img
                     src={selectedTopic.teacherAvatar}
@@ -429,9 +421,15 @@ function StudentDashboard() {
                     {selectedTopic.teacherName}
                   </span>{" "}
                 </div>{" "}
-                <p className="text-sm text-slate leading-relaxed">
-                  {selectedTopic.content}
-                </p>{" "}
+                <div className="mt-6 p-5 rounded-lg bg-violet/10 border-2 border-violet text-ink">
+                  <h3 className="font-sora font-semibold text-sm mb-3 flex items-center gap-2 text-violet">
+                    <BookOpen size={16} />
+                    About this lesson
+                  </h3>
+                  <p className="text-sm leading-relaxed whitespace-pre-line text-slate">
+                    {selectedTopic.content}
+                  </p>
+                </div>{" "}
                 {topicQuiz.length > 0 && (
                   <button
                     className="mt-6 px-5 py-2.5 rounded-lg bg-violet text-white text-sm font-semibold hover:opacity-90 cursor-pointer"
@@ -451,8 +449,14 @@ function StudentDashboard() {
             </div>
           )}{" "}
           {takingQuiz && score === null && (
-            <div className="bg-white rounded-md border border-[#ece7f5] p-6 max-w-2xl">
+            <div className="bg-white rounded-md border border-[#ece7f5] p-6">
               {" "}
+              <button
+                onClick={() => setTakingQuiz(false)}
+                className="flex items-center gap-2 text-slate hover:text-ink text-sm mb-4 cursor-pointer"
+              >
+                <ArrowLeft size={16} /> Back to lesson
+              </button>{" "}
               <h2 className="font-sora font-semibold text-lg text-ink mb-4">
                 {selectedTopic.title} quiz
               </h2>{" "}
