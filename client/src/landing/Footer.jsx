@@ -1,5 +1,13 @@
+import { useState } from "react";
 import { GraduationCap } from "lucide-react";
 function Footer() {
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  function handleSubmit(e) {
+    e.preventDefault();
+    setSubmitted(true);
+  }
   return (
     <footer className="site-footer">
       {" "}
@@ -32,6 +40,33 @@ function Footer() {
               <span>PostgreSQL</span>{" "}
             </div>{" "}
           </div>{" "}
+        </div>{" "}
+        <div className="footer-feedback">
+          {" "}
+          <h3>Have a question or feedback?</h3>{" "}
+          {submitted ? (
+            <p>Thanks! We'll get back to you soon.</p>
+          ) : (
+            <form className="footer-feedback-form" onSubmit={handleSubmit}>
+              {" "}
+              <input
+                type="email"
+                placeholder="Your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />{" "}
+              <textarea
+                placeholder="Your message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                required
+              ></textarea>{" "}
+              <button type="submit" className="btn btn-gold btn-sm">
+                Send
+              </button>{" "}
+            </form>
+          )}{" "}
         </div>{" "}
       </div>{" "}
       <p className="footer-note">

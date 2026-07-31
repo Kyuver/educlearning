@@ -8,11 +8,15 @@ function Landing() {
   return (
     <div className="landing">
       {" "}
-      <Navbar /> <Hero />{" "}
-      <div className="showcase-zone">
+      <Navbar />{" "}
+      <div id="hero">
+        {" "}
+        <Hero />{" "}
+      </div>{" "}
+      <div className="showcase-zone" id="overview">
         {" "}
         <Showcase />{" "}
-      </div>{" "}
+      </div>
       <div className="roles-zone">
         {" "}
         <Roles />{" "}

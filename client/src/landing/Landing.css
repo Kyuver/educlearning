@@ -287,15 +287,19 @@
 }
 .landing .showcase-gif {
   aspect-ratio: 16/10;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px dashed rgba(255, 255, 255, 0.3);
+  background: rgba(21, 15, 40, 0.55);
+  border: 2px solid rgba(255, 201, 60, 0.4);
   border-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.8);
   gap: 10px;
+  box-shadow:
+    0 20px 45px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  backdrop-filter: blur(4px);
 }
 .landing .showcase-gif span {
   font-size: 12px;
@@ -336,11 +340,12 @@
   gap: 24px;
 }
 .landing .role-card {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(21, 15, 40, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 14px;
   padding: 32px 26px;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
   transition:
@@ -508,6 +513,56 @@
   font-size: 11px;
   margin-top: 18px;
 }
+.landing .footer-feedback {
+  max-width: 420px;
+  margin: 28px auto 0;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 24px;
+}
+.landing .footer-feedback h3 {
+  color: var(--white);
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.landing .footer-feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.landing .footer-feedback-form input,
+.landing .footer-feedback-form textarea {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  font-size: 13px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.landing .footer-feedback-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.landing .footer-feedback-form input::placeholder,
+.landing .footer-feedback-form textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+.landing .footer-feedback-form button {
+  align-self: center;
+  margin-top: 6px;
+}
+.landing .footer-feedback p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+}
+
 @media (max-width: 900px) {
   .landing .showcase-inner {
     grid-template-columns: 1fr;
@@ -537,4 +592,55 @@
 .landing .hero-cta {
   margin-top: 28px;
   padding: 9px 20px;
+}
+
+.landing .nav-links li {
+  position: relative;
+}
+.landing .nav-dropdown-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  font-family: inherit;
+}
+.landing .nav-dropdown-btn:hover {
+  color: var(--white);
+}
+.landing .nav-dropdown-menu {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink-soft);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 8px;
+  min-width: 160px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+.landing .nav-dropdown-menu a {
+  display: block;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+}
+.landing .nav-dropdown-menu a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+}
+
+.landing #hero,
+.landing #overview,
+.landing .showcase-section,
+.landing #roles {
+  scroll-margin-top: 100px;
 }

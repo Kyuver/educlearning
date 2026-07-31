@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [overviewOpen, setOverviewOpen] = useState(false);
   useEffect(() => {
     function handleScroll() {
       setScrolled(window.scrollY > window.innerHeight * 0.85);
@@ -17,13 +18,34 @@ function Navbar() {
         <ul className="nav-links">
           {" "}
           <li>
-            <a href="#student-view">Student View</a>
+            <a href="#hero">Home</a>
           </li>{" "}
           <li>
-            <a href="#teacher-view">Teacher View</a>
+            {" "}
+            <button
+              className="nav-dropdown-btn"
+              onClick={() => setOverviewOpen(!overviewOpen)}
+            >
+              {" "}
+              Overview ▾{" "}
+            </button>{" "}
+            {overviewOpen && (
+              <div className="nav-dropdown-menu">
+                {" "}
+                <a href="#student-view" onClick={() => setOverviewOpen(false)}>
+                  Student View
+                </a>{" "}
+                <a href="#teacher-view" onClick={() => setOverviewOpen(false)}>
+                  Teacher View
+                </a>{" "}
+                <a href="#admin-view" onClick={() => setOverviewOpen(false)}>
+                  Admin View
+                </a>{" "}
+              </div>
+            )}{" "}
           </li>{" "}
           <li>
-            <a href="#admin-view">Admin View</a>
+            <a href="#roles">Demos</a>
           </li>{" "}
         </ul>{" "}
         <button className="nav-toggle">☰</button>{" "}
