@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Home, User, BookOpen, Brain, FlaskConical, Globe, Music, Wrench, Plus, X, Trash2, ArrowLeft, LogOut } from "lucide-react";
+import { Home, User, BookOpen, Brain, FlaskConical, Globe, Music, Wrench, Plus, X, Trash2, ArrowLeft, LogOut, AlertTriangle, Loader2, CheckCircle2, School, ClipboardList, Bell } from "lucide-react";
+import { Toaster, toast } from "react-hot-toast";
 import DashboardLayout from "./DashboardLayout";
 
 import {
@@ -35,19 +36,23 @@ function TeacherDashboard() {
   const [editingTopicId, setEditingTopicId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
-  const [tab, setTab] = useState("default");
   const [quizzes, setQuizzes] = useState([]);
-  const [quizSubjectId, setQuizSubjectId] = useState(null);
   const [activeTopic, setActiveTopic] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newQuizTitle, setNewQuizTitle] = useState("");
+  const [confirmLogout, setConfirmLogout] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("approved");
+  const [showInvite, setShowInvite] = useState(true);
+  const [notifOpen, setNotifOpen] = useState(false);
 
   useEffect(() => {
-    document.body.style.overflow = showAddModal || confirmDelete ? "hidden" : "";
+    document.body.style.overflow = showAddModal || confirmDelete || confirmLogout ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [showAddModal, confirmDelete]);
+  }, [showAddModal, confirmDelete, confirmLogout]);
 
   const [draftContent, setDraftContent] = useState("");
+  const [draftTitle, setDraftTitle] = useState("");
+  const [draftCover, setDraftCover] = useState("");
   const mySubjects = subjects.filter((s) =>
     teacherProfile.subjectIds.includes(s.id),
   );
@@ -55,6 +60,7 @@ function TeacherDashboard() {
   const subjectTopics = selectedSubjectId
     ? topicsList.filter((t) => t.subjectId === selectedSubjectId)
     : topicsList.filter((t) => mySubjects.some((s) => s.id === t.subjectId));
+  const filteredTopics = subjectTopics.filter((t) => t.status === statusFilter);
 
   function handleSelectSubject(id) {
     setView("subjects");
@@ -63,11 +69,15 @@ function TeacherDashboard() {
   function startEdit(topic) {
     setEditingTopicId((prev) => (prev === topic.id ? null : topic.id));
     setDraftContent(topic.content);
+    setDraftTitle(topic.title);
+    setDraftCover(topic.coverImage);
   }
   function saveEdit(topicId) {
     setTopicsList(
       topicsList.map((t) =>
-        t.id === topicId ? { ...t, content: draftContent } : t,
+        t.id === topicId
+          ? { ...t, title: draftTitle, coverImage: draftCover, content: draftContent }
+          : t,
       ),
     );
     setEditingTopicId(null);
@@ -128,9 +138,6 @@ function TeacherDashboard() {
       {navItem(view === "profile", "Profile", <User size={16} />, () =>
         setView("profile"),
       )}
-      {navItem(false, "Logout", <LogOut size={16} />, () => {
-        window.location.href = "/";
-      })}
     </>
   );
   function btn(children, onClick) {
@@ -149,6 +156,7 @@ function TeacherDashboard() {
       selectedSubjectId={selectedSubjectId}
       onSelectSubject={handleSelectSubject}
       topItem={topItem}
+      onLogout={() => setConfirmLogout(true)}
     >
       {view === "none" && (
         <p className="text-slate text-sm">Click "Teacher Dashboard" in the sidebar to get started.</p>
@@ -174,7 +182,7 @@ function TeacherDashboard() {
                   </div>
                   <div className="mt-6 flex-1 flex flex-col gap-4">
                     <div className="flex items-center gap-3 p-3 rounded-lg border border-[#ece7f5] bg-paper">
-                      <span className="text-lg">🏫</span>
+                      <span className="w-9 h-9 rounded-full bg-violet/10 text-violet flex items-center justify-center shrink-0"><School size={18} /></span>
                       <div>
                         <p className="text-xs text-slate">School</p>
                         <p className="text-sm font-medium text-ink">
@@ -183,7 +191,7 @@ function TeacherDashboard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 rounded-lg border border-[#ece7f5] bg-paper">
-                      <span className="text-lg">📋</span>
+                      <span className="w-9 h-9 rounded-full bg-violet/10 text-violet flex items-center justify-center shrink-0"><ClipboardList size={18} /></span>
                       <div>
                         <p className="text-xs text-slate">Section</p>
                         <p className="text-sm font-medium text-ink">
@@ -235,35 +243,149 @@ function TeacherDashboard() {
       )}
       {view === "subjects" && (
         <div className="space-y-6">
-          <div className="flex flex-col items-start justify-start gap-3 rounded-xl border border-[#ece7f5] bg-white p-4 shadow-sm">
-            <span className="rounded-full bg-violet/10 px-3 py-1 text-sm font-semibold text-violet">
-              <span className="text-slate">Section:</span> {mySection.name}
-            </span>
-
-            {/* TABS */}
-            <div className="flex gap-6 border-b border-[#ece7f5]">
-              {[
-                { key: "default", label: "Default" },
-                { key: "quizzes", label: "Quizzes" },
-              ].map((t) => (
-                <button
-                  key={t.key}
-                  onClick={() => { setTab(t.key); if (t.key === "default") setActiveTopic(null); }}
-                  className={`pb-2 text-sm font-semibold cursor-pointer relative transition-colors ${tab === t.key ? "text-ink" : "text-slate hover:text-ink"}`}
-                >
-                  {t.label}
-                  {tab === t.key && <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-violet rounded-full" />}
+          {activeTopic ? (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setActiveTopic(null)} className="text-slate hover:text-ink cursor-pointer"><ArrowLeft size={20} /></button>
+                  <div>
+                    <h4 className="text-lg font-sora font-semibold text-ink">{activeTopic.title}</h4>
+                    <p className="text-sm text-slate">All quizzes for this topic</p>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-violet text-white text-sm font-semibold hover:opacity-90 cursor-pointer shrink-0">
+                  <Plus size={18} /> Add Quiz
                 </button>
-              ))}
+              </div>
+              <div className="space-y-3">
+                {quizzes.filter((q) => q.topicId === activeTopic.id).length === 0 && <p className="text-sm text-slate text-center py-10">No quizzes yet.</p>}
+                {quizzes.filter((q) => q.topicId === activeTopic.id).map((quiz) => (
+                  <QuizCard key={quiz.id} quiz={quiz} onDelete={() => deleteQuiz(quiz.id)} onAddQuestion={(q) => addQuestion(quiz.id, q)} onDeleteQuestion={(qId) => deleteQuestion(quiz.id, qId)} />
+                ))}
+              </div>
             </div>
-          </div>
-
-          {tab === "default" && (
+          ) : (
             <div>
+              <div className="flex items-center justify-between gap-4">
+                <span className="rounded-full bg-violet/10 px-3 py-1 text-sm font-semibold text-violet">
+                  <span className="text-slate">Section:</span> {mySection.name}
+                </span>
+                <div className="relative z-50">
+                  <button
+                    onClick={() => setNotifOpen(!notifOpen)}
+                    className="relative w-11 h-11 flex items-center justify-center text-ink  hover:rounded-full transition-colors cursor-pointer"
+                  >
+                    <Bell size={22} />
+                    {showInvite && (
+                      <span className="absolute top-1 right-2 min-w-[16px] h-4 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">3</span>
+                    )}
+                  </button>
+
+                  {notifOpen && (
+                    <div className="absolute top-12 right-0 w-[340px] max-w-[90vw] bg-[#fdfcff] rounded-md border border-[#e9e2f5] shadow-lg shadow-[#2a2049]/10 overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-[#e9e2f5] bg-white">
+                        <div>
+                          <h3 className="font-semibold text-ink text-sm">Notifications</h3>
+                          <p className="text-xs text-slate mt-0.5">{showInvite ? "3 unread" : "You're all caught up"}</p>
+                        </div>
+                        {showInvite && (
+                          <button onClick={() => setShowInvite(false)} className="text-xs font-semibold text-violet hover:underline cursor-pointer">Mark all as read</button>
+                        )}
+                      </div>
+                      <div className="max-h-72 overflow-y-auto divide-y divide-[#ece7f5]">
+                        {showInvite && (
+                          <div className="flex items-start gap-3 p-4">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center text-white shrink-0">
+                              <BookOpen size={16} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-sm font-semibold text-ink">Course Invitation</p>
+                                <span className="w-2 h-2 rounded-full bg-violet shrink-0 mt-1.5" />
+                              </div>
+                              <p className="text-xs text-slate mt-1 leading-snug">
+                                Admin invited you to teach <span className="font-medium text-ink">Computer Literacy</span>.
+                              </p>
+                              <p className="text-xs text-slate mt-1.5">Just now</p>
+                              <div className="flex gap-2 mt-2">
+                                <button onClick={() => setShowInvite(false)} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors cursor-pointer">Accept</button>
+                                <button onClick={() => setShowInvite(false)} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer">Decline</button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {showInvite && (
+                          <div className="flex items-start gap-3 p-4">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 to-purple-400 flex items-center justify-center text-white shrink-0">
+                              <FlaskConical size={16} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-sm font-semibold text-ink">Course Invitation</p>
+                                <span className="w-2 h-2 rounded-full bg-violet shrink-0 mt-1.5" />
+                              </div>
+                              <p className="text-xs text-slate mt-1 leading-snug">
+                                Admin invited you to teach <span className="font-medium text-ink">Science 5</span>.
+                              </p>
+                              <p className="text-xs text-slate mt-1.5">5 minutes ago</p>
+                              <div className="flex gap-2 mt-2">
+                                <button onClick={() => setShowInvite(false)} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors cursor-pointer">Accept</button>
+                                <button onClick={() => setShowInvite(false)} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer">Decline</button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {showInvite && (
+                          <div className="flex items-start gap-3 p-4">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-600 to-teal-400 flex items-center justify-center text-white shrink-0">
+                              <Wrench size={16} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-sm font-semibold text-ink">Course Invitation</p>
+                                <span className="w-2 h-2 rounded-full bg-violet shrink-0 mt-1.5" />
+                              </div>
+                              <p className="text-xs text-slate mt-1 leading-snug">
+                                Admin invited you to teach <span className="font-medium text-ink">Technology and Livelihood Education</span>.
+                              </p>
+                              <p className="text-xs text-slate mt-1.5">1 hour ago</p>
+                              <div className="flex gap-2 mt-2">
+                                <button onClick={() => setShowInvite(false)} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors cursor-pointer">Accept</button>
+                                <button onClick={() => setShowInvite(false)} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer">Decline</button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {!showInvite && (
+                          <div className="py-12 flex flex-col items-center justify-center gap-3">
+                            <div className="w-14 h-14 rounded-full bg-paper flex items-center justify-center">
+                              <Bell size={24} className="text-slate" />
+                            </div>
+                            <p className="text-sm text-slate font-medium">No new notifications</p>
+                            <p className="text-xs text-slate/70">New updates will appear here.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-6 mt-5 mb-5 border-b border-[#ece7f5]">
+                {["approved", "pending", "denied"].map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setStatusFilter(st)}
+                    className={`pb-2 text-sm font-semibold capitalize cursor-pointer relative transition-colors ${statusFilter === st ? "text-ink" : "text-slate hover:text-ink"}`}
+                  >
+                    {st}
+                    {statusFilter === st && <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-violet rounded-full" />}
+                  </button>
+                ))}
+              </div>
               <div className="grid grid-cols-4 gap-4">
-                {subjectTopics.map((t) => {
+                {filteredTopics.map((t) => {
                   return (
-                    <div key={t.id} className="bg-white rounded-md border border-[#ece7f5] overflow-hidden hover:shadow-md transition-shadow duration-200">
+                    <div key={t.id} onClick={() => setActiveTopic(t)} className="bg-white rounded-md border border-[#ece7f5] overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer">
                       <div className="h-44 w-full overflow-hidden">
                         <img
                           src={t.coverImage}
@@ -288,79 +410,11 @@ function TeacherDashboard() {
                             <span className="text-xs text-slate">{t.teacherName}</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 pt-3 mt-3 ">
-                          <button
-                            className="flex-1 cursor-pointer px-3 py-1.5 rounded-md border border-ink text-ink text-xs font-semibold hover:bg-paper transition-colors"
-                            onClick={() => startEdit(t)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="flex-1 cursor-pointer px-3 py-1.5 rounded-md bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition-colors"
-                            onClick={() => setConfirmDelete(t)}
-                          >
-                            Delete
-                          </button>
-                        </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
-            </div>
-          )}
-
-          {tab === "quizzes" && (
-            <div className="space-y-6">
-              {!quizSubjectId && (
-                <div className="grid grid-cols-2 gap-4">
-                  {mySubjects.map((s) => {
-                    const Icon = subjectIcons[s.id];
-                    return (
-                      <div
-                        key={s.id}
-                        onClick={() => setQuizSubjectId(s.id)}
-                        className="flex items-center gap-4 p-5 rounded-xl bg-white border border-[#ece7f5] hover:bg-paper cursor-pointer transition-colors"
-                      >
-                        <div className={"w-12 h-12 rounded-full bg-gradient-to-br flex items-center justify-center text-white shrink-0 " + subjectGradients[s.id]}>{Icon && <Icon size={22} />}</div>
-                        <div><p className="text-base font-semibold text-ink">{s.name}</p><p className="text-sm text-slate mt-0.5">{topicsList.filter((t) => t.subjectId === s.id).length} topics</p></div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {quizSubjectId && !activeTopic && (
-                <div className="flex flex-col gap-3">
-                  <p className="text-sm font-medium text-slate">Topics under {mySubjects.find((s) => s.id === quizSubjectId)?.name}:</p>
-                  {topicsList.filter((t) => t.subjectId === quizSubjectId).map((t) => (
-                    <div key={t.id} onClick={() => setActiveTopic(t)} className="flex items-center justify-between p-4 rounded-xl bg-white border border-[#ece7f5] hover:bg-paper cursor-pointer transition-colors">
-                      <p className="text-base font-medium text-ink">{t.title}</p>
-                      <p className="text-sm text-slate">{quizzes.filter((q) => q.topicId === t.id).length} quizzes</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {quizSubjectId && activeTopic && (
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => setActiveTopic(null)} className="text-slate hover:text-ink cursor-pointer"><ArrowLeft size={20} /></button>
-                      <h4 className="text-base font-semibold text-ink">{activeTopic.title}</h4>
-                    </div>
-                    <button type="button" onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-violet text-white text-sm font-semibold hover:opacity-90 cursor-pointer shrink-0">
-                      <Plus size={18} /> Add Quiz
-                    </button>
-                  </div>
-                  <div className="space-y-3">
-                    {quizzes.filter((q) => q.topicId === activeTopic.id).length === 0 && <p className="text-sm text-slate text-center py-10">No quizzes yet.</p>}
-                    {quizzes.filter((q) => q.topicId === activeTopic.id).map((quiz) => (
-                      <QuizCard key={quiz.id} quiz={quiz} onDelete={() => deleteQuiz(quiz.id)} onAddQuestion={(q) => addQuestion(quiz.id, q)} onDeleteQuestion={(qId) => deleteQuestion(quiz.id, qId)} />
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -378,14 +432,28 @@ function TeacherDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="bg-white rounded-xl w-full max-w-lg shadow-xl">
             <div className="px-6 py-4 border-b border-[#ece7f5]">
-              <h3 className="font-semibold text-ink">Edit topic content</h3>
+              <h3 className="font-semibold text-ink">Edit topic</h3>
             </div>
-            <div className="px-6 py-4">
-              <textarea
-                className="min-h-[200px] w-full border border-[#ece7f5] rounded-lg px-4 py-3 text-sm resize-none outline-none"
-                value={draftContent}
-                onChange={(e) => setDraftContent(e.target.value)}
-              />
+            <div className="px-6 py-4 space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate uppercase tracking-wide">Title</label>
+                <input
+                  type="text"
+                  className="mt-1.5 w-full border border-[#ece7f5] rounded-lg px-4 py-3 text-sm outline-none"
+                  value={draftTitle}
+                  onChange={(e) => setDraftTitle(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate uppercase tracking-wide">Picture</label>
+                <input
+                  type="text"
+                  className="mt-1.5 w-full border border-[#ece7f5] rounded-lg px-4 py-3 text-sm outline-none"
+                  placeholder="Paste an image URL..."
+                  value={draftCover}
+                  onChange={(e) => setDraftCover(e.target.value)}
+                />
+              </div>
             </div>
             <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5]">
               <button
@@ -404,14 +472,48 @@ function TeacherDashboard() {
           </div>
         </div>, document.body
       )}
+      {confirmLogout && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-xl w-full max-w-sm shadow-xl">
+            <div className="px-6 py-5 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                <AlertTriangle size={20} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-ink">Log out</h3>
+                <p className="text-sm text-slate mt-2">Are you sure you want to log out?</p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5]">
+              <button
+                className="px-4 py-2 rounded-lg text-sm font-semibold border border-[#ece7f5] text-slate hover:bg-paper cursor-pointer"
+                onClick={() => setConfirmLogout(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 cursor-pointer"
+                onClick={() => { window.location.href = "/"; }}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>, document.body
+      )}
       {confirmDelete && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="bg-white rounded-xl w-full max-w-sm shadow-xl">
-            <div className="px-6 py-5">
-              <h3 className="font-semibold text-ink">Delete topic</h3>
-              <p className="text-sm text-slate mt-2">
-                Are you sure you want to delete <span className="font-medium text-ink">{confirmDelete.title}</span>? This action cannot be undone.
-              </p>
+            <div className="px-6 py-5 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
+                <AlertTriangle size={20} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-ink">Delete topic</h3>
+                <p className="text-sm text-slate mt-2">
+                  Are you sure you want to delete <span className="font-medium text-ink">{confirmDelete.title}</span>? This action cannot be undone.
+                </p>
+              </div>
             </div>
             <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5]">
               <button
@@ -441,10 +543,17 @@ function AddQuizFormModal({ topicTitle, title, onChangeTitle, onSave, onClose })
   const [questionText, setQuestionText] = useState("");
   const [choices, setChoices] = useState(["", "", "", ""]);
   const [correctIndex, setCorrectIndex] = useState(0);
+  const [saving, setSaving] = useState(false);
 
   function handleSave() {
     if (!questionText.trim() || choices.some((c) => !c.trim())) return;
-    onSave({ text: questionText.trim(), choices: [...choices], correctIndex });
+    if (saving) return;
+    setSaving(true);
+    setTimeout(() => {
+      onSave({ text: questionText.trim(), choices: [...choices], correctIndex });
+      toast.success("Quiz added successfully!");
+      setSaving(false);
+    }, 800);
   }
 
   return (
@@ -483,7 +592,9 @@ function AddQuizFormModal({ topicTitle, title, onChangeTitle, onSave, onClose })
 
         <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5] shrink-0">
           <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-semibold border border-[#ece7f5] text-slate hover:bg-paper cursor-pointer">Cancel</button>
-          <button onClick={handleSave} className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet text-white hover:opacity-90 cursor-pointer">Save Quiz</button>
+          <button onClick={handleSave} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet text-white hover:opacity-90 cursor-pointer flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />} {saving ? "Saving..." : "Save Quiz"}
+          </button>
         </div>
       </div>
     </div>
@@ -496,11 +607,18 @@ function QuizCard({ quiz, onDelete, onAddQuestion, onDeleteQuestion }) {
   const [questionText, setQuestionText] = useState("");
   const [choices, setChoices] = useState(["", "", "", ""]);
   const [correctIndex, setCorrectIndex] = useState(0);
+  const [saving, setSaving] = useState(false);
 
   function saveQuestion() {
     if (!questionText.trim() || choices.some((c) => !c.trim())) return;
-    onAddQuestion({ text: questionText.trim(), choices: [...choices], correctIndex });
-    setQuestionText(""); setChoices(["", "", "", ""]); setCorrectIndex(0); setAdding(false);
+    if (saving) return;
+    setSaving(true);
+    setTimeout(() => {
+      onAddQuestion({ text: questionText.trim(), choices: [...choices], correctIndex });
+      toast.success("Question added successfully!");
+      setSaving(false);
+      setQuestionText(""); setChoices(["", "", "", ""]); setCorrectIndex(0); setAdding(false);
+    }, 500);
   }
 
   return (
@@ -511,7 +629,7 @@ function QuizCard({ quiz, onDelete, onAddQuestion, onDeleteQuestion }) {
           <p className="text-sm text-slate mt-0.5">{quiz.questions.length} question{quiz.questions.length !== 1 ? "s" : ""}</p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setAdding(!adding)} className="px-4 py-2 rounded-lg text-sm font-semibold border border-violet text-violet hover:bg-violet hover:text-white transition-colors cursor-pointer"><Plus size={16} /> {adding ? "Close" : "Add Question"}</button>
+          <button onClick={() => setAdding(!adding)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border border-violet text-violet hover:bg-violet hover:text-white transition-colors cursor-pointer"><Plus size={16} /> {adding ? "Close" : "Add Question"}</button>
           <button onClick={() => setConfirmDel(true)} className="p-2 rounded-lg border border-[#ece7f5] text-slate hover:bg-paper cursor-pointer"><Trash2 size={16} /></button>
         </div>
       </div>
@@ -534,7 +652,9 @@ function QuizCard({ quiz, onDelete, onAddQuestion, onDeleteQuestion }) {
           </div>
           <div className="flex justify-end gap-2">
             <button onClick={() => setAdding(false)} className="px-4 py-2 rounded-lg text-sm font-semibold border border-[#ece7f5] text-slate hover:bg-paper cursor-pointer">Cancel</button>
-            <button onClick={saveQuestion} className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet text-white hover:opacity-90 cursor-pointer">Save Question</button>
+            <button onClick={saveQuestion} disabled={saving} className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet text-white hover:opacity-90 cursor-pointer flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+              {saving ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />} {saving ? "Saving..." : "Save Question"}
+            </button>
           </div>
         </div>
       )}
@@ -560,9 +680,14 @@ function QuizCard({ quiz, onDelete, onAddQuestion, onDeleteQuestion }) {
       {confirmDel && createPortal(
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4">
           <div className="bg-white rounded-xl w-full max-w-sm shadow-xl">
-            <div className="px-6 py-5">
-              <h3 className="font-semibold text-ink text-base">Delete quiz</h3>
-              <p className="text-sm text-slate mt-2">Delete <span className="font-medium text-ink">{quiz.title}</span>?</p>
+            <div className="px-6 py-5 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
+                <AlertTriangle size={20} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-ink text-base">Delete quiz</h3>
+                <p className="text-sm text-slate mt-2">Delete <span className="font-medium text-ink">{quiz.title}</span>?</p>
+              </div>
             </div>
             <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5]">
               <button className="px-4 py-2 rounded-lg text-sm font-semibold border border-[#ece7f5] text-slate hover:bg-paper cursor-pointer" onClick={() => setConfirmDel(false)}>Cancel</button>

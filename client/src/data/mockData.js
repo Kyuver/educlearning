@@ -22,6 +22,7 @@ export const topics = [
     teacherAvatar: "https://i.pravatar.cc/80?img=32",
     content:
       "A fraction represents a part of a whole. For example, 1/2 means one part out of two equal parts. Fractions are made up of a numerator (top number) and a denominator (bottom number).",
+    status: "approved"
   },
   {
     id: 2,
@@ -31,6 +32,7 @@ export const topics = [
     teacherName: "Maria Santos",
     teacherAvatar: "https://i.pravatar.cc/80?img=32",
     content: "Lesson content coming soon.",
+    status: "approved"
   },
   {
     id: 3,
@@ -40,6 +42,7 @@ export const topics = [
     teacherName: "Maria Santos",
     teacherAvatar: "https://i.pravatar.cc/80?img=32",
     content: "Lesson content coming soon.",
+    status: "pending"
   },
   {
     id: 4,
@@ -49,6 +52,7 @@ export const topics = [
     teacherName: "Juan Dela Cruz",
     teacherAvatar: "https://i.pravatar.cc/80?img=53",
     content: "Lesson content coming soon.",
+    status: "approved"
   },
   {
     id: 5,
@@ -58,6 +62,7 @@ export const topics = [
     teacherName: "Juan Dela Cruz",
     teacherAvatar: "https://i.pravatar.cc/80?img=53",
     content: "Lesson content coming soon.",
+    status: "pending"
   },
   {
     id: 6,
@@ -67,6 +72,7 @@ export const topics = [
     teacherName: "Ana Reyes",
     teacherAvatar: "https://i.pravatar.cc/80?img=47",
     content: "Lesson content coming soon.",
+    status: "approved"
   },
   {
     id: 7,
@@ -76,6 +82,7 @@ export const topics = [
     teacherName: "Ana Reyes",
     teacherAvatar: "https://i.pravatar.cc/80?img=47",
     content: "Lesson content coming soon.",
+    status: "denied"
   },
   {
     id: 8,
@@ -85,6 +92,7 @@ export const topics = [
     teacherName: "Carlo Mendoza",
     teacherAvatar: "https://i.pravatar.cc/80?img=12",
     content: "Lesson content coming soon.",
+    status: "pending"
   },
   {
     id: 9,
@@ -94,6 +102,7 @@ export const topics = [
     teacherName: "Bella Flores",
     teacherAvatar: "https://i.pravatar.cc/80?img=5",
     content: "Lesson content coming soon.",
+    status: "approved"
   },
   {
     id: 10,
@@ -103,6 +112,7 @@ export const topics = [
     teacherName: "Ken Garcia",
     teacherAvatar: "https://i.pravatar.cc/80?img=61",
     content: "Lesson content coming soon.",
+    status: "denied"
   },
 ];
 export const quizzes = [

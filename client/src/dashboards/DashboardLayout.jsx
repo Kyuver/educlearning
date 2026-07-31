@@ -5,6 +5,7 @@ function DashboardLayout({
   selectedSubjectId,
   onSelectSubject,
   topItem,
+  onLogout,
   children,
 }) {
   return (
@@ -14,6 +15,7 @@ function DashboardLayout({
         selectedSubjectId={selectedSubjectId}
         onSelectSubject={onSelectSubject}
         topItem={topItem}
+        onLogout={onLogout}
       />
       <main className="flex-1 p-10 px-12 flex flex-col">{children}</main>
     </div>

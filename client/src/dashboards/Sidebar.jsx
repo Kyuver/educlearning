@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronRight, LogOut } from "lucide-react";
+import { ChevronRight, BookOpen, LogOut } from "lucide-react";
 
-function Sidebar({ subjects, selectedSubjectId, onSelectSubject, topItem }) {
+function Sidebar({ subjects, selectedSubjectId, onSelectSubject, topItem, onLogout }) {
   const [coursesOpen, setCoursesOpen] = useState(true);
   return (
-    <aside className="w-64 h-screen sticky top-0 bg-ink text-white flex flex-col shrink-0">
-      <div className="px-6 py-5 text-lg font-bold text-gold">KlikAral</div>
+    <aside className="w-64 h-screen sticky top-0 bg-gradient-to-b from-[#7c5cfc] to-[#2a2049] text-white flex flex-col shrink-0">
+      <div className="px-6 py-5 text-lg font-bold text-white">KlikAral</div>
       <nav className="flex-1 overflow-y-auto">
         {topItem}
         <div
           className="flex items-center gap-2.5 px-5 py-3 text-sm cursor-pointer border-l-3 border-transparent hover:bg-white/6"
           onClick={() => setCoursesOpen(!coursesOpen)}
         >
-          <span>📚</span> Courses
+          <BookOpen size={16} /> Courses
           <motion.span
             className="ml-auto"
             animate={{ rotate: coursesOpen ? 90 : 0 }}
@@ -50,10 +50,13 @@ function Sidebar({ subjects, selectedSubjectId, onSelectSubject, topItem }) {
           )}
         </AnimatePresence>
       </nav>
-      <div className="px-5 py-4 border-t border-white/10">
-        <a href="/" className="flex items-center gap-2.5 px-5 py-3 text-sm text-white/85 hover:bg-white/6 rounded-md cursor-pointer">
+      <div className="px-4 py-4 border-t border-white/10">
+        <button
+          onClick={() => (onLogout ? onLogout() : (window.location.href = "/"))}
+          className="w-full flex items-center gap-2.5 px-5 py-3 text-sm text-white/85 hover:bg-white/6 rounded-md cursor-pointer text-left"
+        >
           <LogOut size={16} /> Logout
-        </a>
+        </button>
       </div>
     </aside>
   );
