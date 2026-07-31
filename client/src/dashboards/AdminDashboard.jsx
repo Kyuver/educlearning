@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   Home,
@@ -14,18 +14,19 @@ import {
   CheckCircle2,
   Send,
   UserCheck,
-  ClipboardList,
-  Shield,
   X,
   Loader2,
+  ChevronDown,
+  Check,
+  Pencil,
 } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 import DashboardLayout from "./DashboardLayout";
+import ConfirmLogoutModal from "../compontents/ConfirmLogoutModal";
+import ImagePicker from "../compontents/ImagePicker";
 import {
   subjects as initialSubjects,
   topics as initialTopics,
-  pendingItems as initialPending,
-  incidents as initialIncidents,
   teachers as initialTeachers,
   invitations as initialInvitations,
 } from "../data/mockData";
@@ -58,23 +59,44 @@ function AdminDashboard() {
   const [view, setView] = useState("dashboard");
   const [subjectsList, setSubjectsList] = useState(initialSubjects);
   const [topicsList, setTopicsList] = useState(initialTopics);
-  const [pending, setPending] = useState(initialPending);
-  const [incidentsList, setIncidentsList] = useState(initialIncidents);
   const [teachersList] = useState(initialTeachers);
   const [invites, setInvites] = useState(initialInvitations);
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [newSubjectName, setNewSubjectName] = useState("");
   const [newTopicTitle, setNewTopicTitle] = useState("");
+  const [newTopicContent, setNewTopicContent] = useState("");
+  const [newTopicCover, setNewTopicCover] = useState("");
+  const [newTopicTeacherId, setNewTopicTeacherId] = useState("");
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteTeacherId, setInviteTeacherId] = useState("");
-  const [inviteCourse, setInviteCourse] = useState("");
+  const [inviteCourseId, setInviteCourseId] = useState("");
   const [sending, setSending] = useState(false);
+  const [viewTopic, setViewTopic] = useState(null);
+  const [showAddTopicModal, setShowAddTopicModal] = useState(false);
+  const [editingTopic, setEditingTopic] = useState(null);
+  const [teacherDropdownOpen, setTeacherDropdownOpen] = useState(false);
+  const [courseDropdownOpen, setCourseDropdownOpen] = useState(false);
+  const teacherDropdownRef = useRef(null);
+  const courseDropdownRef = useRef(null);
 
   useEffect(() => {
-    document.body.style.overflow = showInviteModal || confirmLogout ? "hidden" : "";
+    document.body.style.overflow = showInviteModal || confirmLogout || viewTopic || showAddTopicModal ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [showInviteModal, confirmLogout]);
+  }, [showInviteModal, confirmLogout, viewTopic, showAddTopicModal]);
+
+  useEffect(() => {
+    function handleOutsideClick(e) {
+    if (teacherDropdownRef.current && !teacherDropdownRef.current.contains(e.target)) {
+      setTeacherDropdownOpen(false);
+    }
+    if (courseDropdownRef.current && !courseDropdownRef.current.contains(e.target)) {
+      setCourseDropdownOpen(false);
+    }
+    }
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   const subjectTopics = topicsList.filter(
     (t) => t.subjectId === selectedSubjectId,
@@ -86,18 +108,6 @@ function AdminDashboard() {
     setSelectedSubjectId(id);
   }
 
-  function approve(id) {
-    setPending(pending.filter((p) => p.id !== id));
-    toast.success("Item approved!");
-  }
-  function deleteItem(id) {
-    setPending(pending.filter((p) => p.id !== id));
-  }
-  function deleteSubject(id) {
-    setSubjectsList(subjectsList.filter((s) => s.id !== id));
-    setTopicsList(topicsList.filter((t) => t.subjectId !== id));
-    setSelectedSubjectId(null);
-  }
   function deleteTopic(id) {
     setTopicsList(topicsList.filter((t) => t.id !== id));
   }
@@ -110,6 +120,7 @@ function AdminDashboard() {
   }
   function addTopic() {
     if (!newTopicTitle.trim() || !selectedSubjectId) return;
+    const teacher = teachersList.find((t) => t.id === Number(newTopicTeacherId));
     const newId = topicsList.length
       ? Math.max(...topicsList.map((t) => t.id)) + 1
       : 1;
@@ -118,23 +129,74 @@ function AdminDashboard() {
       {
         id: newId,
         subjectId: selectedSubjectId,
-        title: newTopicTitle,
-        content: "Lesson content coming soon.",
+        title: newTopicTitle.trim(),
+        content: newTopicContent.trim() || "No explanation yet.",
         status: "approved",
+        teacherName: teacher?.name || "Unassigned",
+        teacherAvatar: teacher?.avatar || "https://i.pravatar.cc/80?img=68",
+        coverImage: newTopicCover.trim() || `https://picsum.photos/seed/adtopic${newId}/400/300`,
       },
     ]);
     setNewTopicTitle("");
-    toast.success("Topic added!");
+    setNewTopicContent("");
+    setNewTopicCover("");
+    setNewTopicTeacherId("");
+    setShowAddTopicModal(false);
+    toast.success(teacher ? `Topic added and assigned to ${teacher.name}!` : "Topic added!");
   }
-  function resolveIncident(id) {
-    setIncidentsList(incidentsList.filter((i) => i.id !== id));
-    toast.success("Incident resolved!");
+  function openEditTopic(topic) {
+    setEditingTopic(topic);
+    setNewTopicTitle(topic.title);
+    setNewTopicContent(topic.content);
+    setNewTopicCover(topic.coverImage);
+    setNewTopicTeacherId(
+      String(teachersList.find((t) => t.name === topic.teacherName)?.id ?? ""),
+    );
+    setShowAddTopicModal(true);
+  }
+  function saveTopicEdit() {
+    if (!newTopicTitle.trim() || !editingTopic) return;
+    const teacher = teachersList.find((t) => t.id === Number(newTopicTeacherId));
+    setTopicsList(
+      topicsList.map((t) =>
+        t.id === editingTopic.id
+          ? {
+              ...t,
+              title: newTopicTitle.trim(),
+              content: newTopicContent.trim() || "No explanation yet.",
+              coverImage: newTopicCover.trim() || t.coverImage,
+              teacherName: teacher?.name || "Unassigned",
+              teacherAvatar: teacher?.avatar || t.teacherAvatar,
+            }
+          : t,
+      ),
+    );
+    setNewTopicTitle("");
+    setNewTopicContent("");
+    setNewTopicCover("");
+    setNewTopicTeacherId("");
+    setEditingTopic(null);
+    setShowAddTopicModal(false);
+    toast.success("Topic updated!");
+  }
+  function approveTopic(id) {
+    setTopicsList(
+      topicsList.map((t) => (t.id === id ? { ...t, status: "approved" } : t)),
+    );
+    toast.success("Topic approved!");
+  }
+  function rejectTopic(id) {
+    setTopicsList(
+      topicsList.map((t) => (t.id === id ? { ...t, status: "denied" } : t)),
+    );
+    toast.success("Topic rejected.");
   }
 
   function sendInvite() {
     const teacher = teachersList.find((t) => t.id === Number(inviteTeacherId));
-    if (!teacher || !inviteCourse.trim()) {
-      toast.error("Pick a teacher and enter a course.");
+    const subject = subjectsList.find((s) => s.id === Number(inviteCourseId));
+    if (!teacher || !subject) {
+      toast.error("Pick a teacher and a course.");
       return;
     }
     setSending(true);
@@ -143,7 +205,7 @@ function AdminDashboard() {
         {
           id: Date.now(),
           teacherId: teacher.id,
-          course: inviteCourse.trim(),
+          course: subject.name,
           status: "pending",
           sentAt: "Just now",
         },
@@ -156,24 +218,6 @@ function AdminDashboard() {
       toast.success(`Invitation sent to ${teacher.name}!`);
     }, 700);
   }
-
-  function updateInviteStatus(id, status) {
-    setInvites(
-      invites.map((i) => (i.id === id ? { ...i, status } : i)),
-    );
-    toast.success(`Invitation marked as ${status}.`);
-  }
-  function removeInvite(id) {
-    setInvites(invites.filter((i) => i.id !== id));
-  }
-
-  const approvedTopics = topicsList.filter((t) => t.status === "approved").length;
-  const stats = [
-    { label: "Subjects", value: subjectsList.length, Icon: BookOpen, color: "text-blue-600 bg-blue-50" },
-    { label: "Topics", value: topicsList.length, Icon: ClipboardList, color: "text-violet bg-violet/10" },
-    { label: "Pending approvals", value: pending.length, Icon: AlertTriangle, color: "text-amber-600 bg-amber-50" },
-    { label: "Open incidents", value: incidentsList.length, Icon: Shield, color: "text-red-500 bg-red-50" },
-  ];
 
   const topItem = (
     <div
@@ -194,229 +238,187 @@ function AdminDashboard() {
     >
       {view === "dashboard" && (
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
+          {selectedSubjectId ? (
             <div>
-              <h1 className="font-sora font-semibold text-2xl text-ink">Admin Dashboard</h1>
-              <p className="text-sm text-slate mt-1">Manage courses, approvals, and teacher invitations.</p>
-            </div>
-            <button
-              onClick={() => setShowInviteModal(true)}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-violet text-white text-sm font-semibold hover:opacity-90 cursor-pointer shrink-0"
-            >
-              <Send size={18} /> Invite Teacher
-            </button>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-4 gap-4">
-            {stats.map(({ label, value, Icon, color }) => (
-              <div key={label} className="bg-white rounded-md border border-[#ece7f5] p-5 flex items-center gap-4">
-                <span className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${color}`}>
-                  <Icon size={20} />
-                </span>
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-sora font-bold text-ink">{value}</p>
-                  <p className="text-xs text-slate mt-0.5">{label}</p>
+                  <h2 className="font-sora font-semibold text-xl text-ink">{selectedSubject.name} — Topics</h2>
+                  <p className="text-sm text-slate mt-1">{subjectTopics.length} topic{subjectTopics.length !== 1 ? "s" : ""}</p>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Invitations */}
-          <div className="bg-white rounded-md border border-[#ece7f5] overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#ece7f5]">
-              <div className="flex items-center gap-2">
-                <UserCheck size={18} className="text-violet" />
-                <h2 className="font-sora font-semibold text-ink">Course invitations</h2>
-              </div>
-              <span className="text-xs font-semibold text-slate">{invites.filter((i) => i.status === "pending").length} pending</span>
-            </div>
-            {invites.length === 0 ? (
-              <p className="text-sm text-slate text-center py-10">No invitations sent yet.</p>
-            ) : (
-              <div className="divide-y divide-[#ece7f5]">
-                {invites.map((inv) => {
-                  const teacher = teachersList.find((t) => t.id === inv.teacherId);
-                  return (
-                    <div key={inv.id} className="flex items-center gap-4 px-6 py-4">
-                      <img src={teacher?.avatar} alt={teacher?.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-ink">{teacher?.name}</p>
-                        <p className="text-sm text-slate mt-0.5">
-                          Invited to teach <span className="font-medium text-ink">{inv.course}</span>
-                        </p>
-                        <p className="text-xs text-slate mt-1">{inv.sentAt}</p>
-                      </div>
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border capitalize shrink-0 ${statusStyles[inv.status]}`}>
-                        {inv.status}
-                      </span>
-                      <div className="flex gap-1.5 shrink-0">
-                        {inv.status === "pending" && (
-                          <>
-                            <button
-                              onClick={() => updateInviteStatus(inv.id, "accepted")}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors cursor-pointer"
-                            >
-                              <CheckCircle2 size={14} /> Accept
-                            </button>
-                            <button
-                              onClick={() => updateInviteStatus(inv.id, "declined")}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer"
-                            >
-                              <X size={14} /> Decline
-                            </button>
-                          </>
-                        )}
-                        <button
-                          onClick={() => removeInvite(inv.id)}
-                          className="p-1.5 rounded-lg text-slate hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                          title="Remove invitation"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Pending approvals */}
-          <div className="bg-white rounded-md border border-[#ece7f5] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#ece7f5]">
-              <h2 className="font-sora font-semibold text-ink">Pending approvals</h2>
-            </div>
-            {pending.length === 0 ? (
-              <p className="text-sm text-slate text-center py-10">No pending items.</p>
-            ) : (
-              <div className="divide-y divide-[#ece7f5]">
-                {pending.map((p) => (
-                  <div key={p.id} className="flex items-center gap-4 px-6 py-4">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-ink">{p.name}</p>
-                      <p className="text-xs text-slate mt-0.5">{p.type}</p>
-                    </div>
-                    <div className="flex gap-2 shrink-0">
-                      <button
-                        onClick={() => approve(p.id)}
-                        className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors cursor-pointer"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => deleteItem(p.id)}
-                        className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Incidents */}
-          <div className="bg-white rounded-md border border-[#ece7f5] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#ece7f5]">
-              <h2 className="font-sora font-semibold text-ink">Reported incidents</h2>
-            </div>
-            {incidentsList.length === 0 ? (
-              <p className="text-sm text-slate text-center py-10">No open incidents.</p>
-            ) : (
-              <div className="divide-y divide-[#ece7f5]">
-                {incidentsList.map((i) => (
-                  <div key={i.id} className="flex items-start gap-4 px-6 py-4">
-                    <div className="w-9 h-9 rounded-full bg-red-50 text-red-500 flex items-center justify-center shrink-0">
-                      <AlertTriangle size={16} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-ink">{i.type}</p>
-                      <p className="text-sm text-slate mt-0.5">{i.description}</p>
-                      <p className="text-xs text-slate mt-1">Reported by {i.reportedBy}</p>
-                    </div>
-                    <button
-                      onClick={() => resolveIncident(i.id)}
-                      className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-violet text-white hover:opacity-90 transition-colors cursor-pointer shrink-0"
-                    >
-                      Resolve
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Course management */}
-          <div className="bg-white rounded-md border border-[#ece7f5] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#ece7f5]">
-              <h2 className="font-sora font-semibold text-ink">Course management</h2>
-            </div>
-            <div className="p-6">
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  placeholder="New subject name"
-                  value={newSubjectName}
-                  onChange={(e) => setNewSubjectName(e.target.value)}
-                  className="flex-1 border border-[#ece7f5] rounded-lg px-4 py-2.5 text-sm outline-none focus:border-violet"
-                />
                 <button
-                  onClick={addSubject}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-violet text-white text-sm font-semibold hover:opacity-90 transition-colors cursor-pointer"
+                  onClick={() => setShowAddTopicModal(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet text-white text-sm font-semibold hover:opacity-90 transition-colors cursor-pointer"
                 >
-                  <Plus size={16} /> Add subject
+                  <Plus size={17} /> Add Topic
+                </button>
+              </div>
+              {subjectTopics.length === 0 ? (
+                <div className="mt-6 bg-white rounded-md border border-[#ece7f5] py-16 flex flex-col items-center justify-center gap-3">
+                  <BookOpen size={32} className="text-slate" />
+                  <p className="text-sm text-slate font-medium">No topics yet.</p>
+                  <p className="text-xs text-slate/70">Add a topic for this course.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-4 mt-6">
+                  {subjectTopics.map((t) => (
+                    <div key={t.id} className="bg-white rounded-md border border-[#ece7f5] overflow-hidden">
+                      <div className={`h-36 overflow-hidden bg-gradient-to-br ${subjectGradients[selectedSubjectId] || "from-violet to-purple-400"}`}>
+                        <img src={t.coverImage} alt={t.title} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="text-sm font-semibold text-ink truncate">{t.title}</h3>
+                        <div className="flex items-center gap-2 mt-2">
+                          <img src={t.teacherAvatar} alt={t.teacherName} className="w-6 h-6 rounded-full object-cover shrink-0" />
+                          <span className="text-xs text-slate truncate">{t.teacherName}</span>
+                        </div>
+                        <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-[#ece7f5]">
+                          <button
+                            onClick={() => openEditTopic(t)}
+                            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-violet bg-violet/10 hover:bg-violet/20 transition-colors cursor-pointer"
+                          >
+                            <Pencil size={12} /> Edit
+                          </button>
+                          <button
+                            onClick={() => deleteTopic(t.id)}
+                            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-red-500 bg-red-50 hover:bg-red-100 transition-colors cursor-pointer"
+                          >
+                            <Trash2 size={12} /> Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="font-sora font-semibold text-2xl text-ink">Admin Dashboard</h1>
+                  <p className="text-sm text-slate mt-1">Manage courses, approvals, and teacher invitations.</p>
+                </div>
+                <button
+                  onClick={() => setShowInviteModal(true)}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-violet text-white text-sm font-semibold hover:opacity-90 cursor-pointer shrink-0"
+                >
+                  <Send size={18} /> Invite Teacher
                 </button>
               </div>
 
-              {selectedSubjectId && (
-                <div className="mt-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-ink">{selectedSubject.name}</h3>
-                    <button
-                      onClick={() => deleteSubject(selectedSubjectId)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-500 hover:bg-red-100 transition-colors cursor-pointer"
-                    >
-                      <Trash2 size={14} /> Delete subject
-                    </button>
+              {/* Invitations */}
+              <div className="bg-white rounded-md border border-[#ece7f5] overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#ece7f5]">
+                  <div className="flex items-center gap-2">
+                    <UserCheck size={18} className="text-violet" />
+                    <h2 className="font-sora font-semibold text-ink">Course invitations</h2>
                   </div>
-                  <div className="flex gap-3 mt-3">
-                    <input
-                      type="text"
-                      placeholder="New topic title"
-                      value={newTopicTitle}
-                      onChange={(e) => setNewTopicTitle(e.target.value)}
-                      className="flex-1 border border-[#ece7f5] rounded-lg px-4 py-2.5 text-sm outline-none focus:border-violet"
-                    />
-                    <button
-                      onClick={addTopic}
-                      className="px-4 py-2.5 rounded-lg border border-[#ece7f5] text-sm font-semibold text-ink hover:bg-paper transition-colors cursor-pointer"
-                    >
-                      Add topic
-                    </button>
+                  <span className="text-xs font-semibold text-slate">{invites.filter((i) => i.status === "pending").length} pending</span>
+                </div>
+                {invites.length === 0 ? (
+                  <p className="text-sm text-slate text-center py-10">No invitations sent yet.</p>
+                ) : (
+                  <div className="divide-y divide-[#ece7f5]">
+                    {invites.map((inv) => {
+                      const teacher = teachersList.find((t) => t.id === inv.teacherId);
+                      return (
+                        <div key={inv.id} className="flex items-center gap-4 px-6 py-4">
+                          <img src={teacher?.avatar} alt={teacher?.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-ink">{teacher?.name}</p>
+                            <p className="text-sm text-slate mt-0.5">
+                              Invited to teach <span className="font-medium text-ink">{inv.course}</span>
+                            </p>
+                            <p className="text-xs text-slate mt-1">{inv.sentAt}</p>
+                          </div>
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border capitalize shrink-0 ${statusStyles[inv.status]}`}>
+                            {inv.status}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="grid grid-cols-3 gap-3 mt-4">
-                    {subjectTopics.map((t) => (
-                      <div key={t.id} className="flex items-center justify-between gap-2 border border-[#ece7f5] rounded-lg px-4 py-3">
-                        <span className="text-sm font-medium text-ink truncate">{t.title}</span>
-                        <button
-                          onClick={() => deleteTopic(t.id)}
-                          className="text-slate hover:text-red-500 transition-colors cursor-pointer shrink-0"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                )}
+              </div>
+
+              {/* Pending topic approvals */}
+              <div className="bg-white rounded-md border border-[#ece7f5] overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#ece7f5]">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={18} className="text-violet" />
+                    <h2 className="font-sora font-semibold text-ink">Topic approvals</h2>
+                  </div>
+                  <span className="text-xs font-semibold text-slate">{topicsList.filter((t) => t.status === "pending").length} pending</span>
+                </div>
+                {topicsList.filter((t) => t.status === "pending").length === 0 ? (
+                  <p className="text-sm text-slate text-center py-10">No topics waiting for approval.</p>
+                ) : (
+                  <div className="divide-y divide-[#ece7f5]">
+                    {topicsList.filter((t) => t.status === "pending").map((t) => (
+                      <div key={t.id} className="flex items-start gap-4 px-6 py-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-ink">{t.title}</p>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-violet bg-violet/10 shrink-0">
+                              {subjectsList.find((s) => s.id === t.subjectId)?.name}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate mt-1">
+                            Uploaded by <span className="font-medium text-ink">{t.teacherName}</span>
+                          </p>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <button
+                            onClick={() => setViewTopic(t)}
+                            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-[#ece7f5] text-ink hover:bg-paper transition-colors cursor-pointer"
+                          >
+                            View more details
+                          </button>
+                          <button
+                            onClick={() => approveTopic(t.id)}
+                            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-green-500 text-white hover:bg-green-600 transition-colors cursor-pointer"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => rejectTopic(t.id)}
+                            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer"
+                          >
+                            Decline
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
+                )}
+              </div>
+
+              {/* Add subject */}
+              <div className="bg-white rounded-md border border-[#ece7f5] overflow-hidden">
+                <div className="px-6 py-4 border-b border-[#ece7f5]">
+                  <h2 className="font-sora font-semibold text-ink">Add a subject</h2>
                 </div>
-              )}
-              {!selectedSubjectId && (
-                <p className="text-sm text-slate mt-4">Pick a course from the sidebar to manage its topics.</p>
-              )}
-            </div>
-          </div>
+                <div className="p-6">
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      placeholder="New subject name"
+                      value={newSubjectName}
+                      onChange={(e) => setNewSubjectName(e.target.value)}
+                      className="flex-1 border border-[#ece7f5] rounded-lg px-4 py-2.5 text-sm outline-none focus:border-violet"
+                    />
+                    <button
+                      onClick={addSubject}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-violet text-white text-sm font-semibold hover:opacity-90 transition-colors cursor-pointer"
+                    >
+                      <Plus size={16} /> Add subject
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -488,37 +490,176 @@ function AdminDashboard() {
           document.body,
         )}
 
-      {confirmLogout &&
+      {viewTopic &&
         createPortal(
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-            <div className="bg-white rounded-xl w-full max-w-sm shadow-xl">
-              <div className="px-6 py-5 flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-                  <AlertTriangle size={20} />
+            <div className="bg-white rounded-xl w-full max-w-md shadow-xl">
+              <div className="flex items-start justify-between px-6 py-5 border-b border-[#ece7f5]">
+                <h3 className="font-semibold text-ink text-lg">Topic review</h3>
+                <button onClick={() => setViewTopic(null)} className="text-slate hover:text-ink transition-colors cursor-pointer">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="px-6 py-5 space-y-4">
+                <div className="h-36 rounded-lg overflow-hidden">
+                  <img src={viewTopic.coverImage} alt={viewTopic.title} className="w-full h-full object-cover" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-base font-semibold text-ink">{viewTopic.title}</h4>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-violet bg-violet/10 shrink-0">
+                    {subjectsList.find((s) => s.id === viewTopic.subjectId)?.name}
+                  </span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-ink">Log out</h3>
-                  <p className="text-sm text-slate mt-2">Are you sure you want to log out?</p>
+                  <p className="text-xs font-semibold text-violet uppercase tracking-wide">Explanation</p>
+                  <p className="text-sm text-slate mt-1 leading-relaxed">{viewTopic.content || "No explanation yet."}</p>
                 </div>
+                <p className="text-xs text-slate">
+                  Uploaded by <span className="font-medium text-ink">{viewTopic.teacherName}</span>
+                </p>
               </div>
               <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5]">
                 <button
-                  className="px-4 py-2 rounded-lg text-sm font-semibold border border-[#ece7f5] text-slate hover:bg-paper cursor-pointer"
-                  onClick={() => setConfirmLogout(false)}
+                  onClick={() => rejectTopic(viewTopic.id)}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 cursor-pointer"
                 >
-                  Cancel
+                  Decline
                 </button>
                 <button
-                  className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 cursor-pointer"
-                  onClick={() => { window.location.href = "/"; }}
+                  onClick={() => { approveTopic(viewTopic.id); setViewTopic(null); }}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold bg-green-500 text-white hover:bg-green-600 cursor-pointer"
                 >
-                  Logout
+                  Accept
                 </button>
               </div>
             </div>
           </div>,
           document.body,
         )}
+
+      {showAddTopicModal &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+            <div className="bg-white rounded-xl w-full max-w-lg shadow-xl">
+              <div className="flex items-start justify-between px-6 py-5 border-b border-[#ece7f5]">
+                <div>
+                  <h3 className="font-semibold text-ink text-lg">{editingTopic ? "Edit topic" : "Add a topic"}</h3>
+                  <p className="text-sm text-slate mt-1">in {selectedSubject?.name}</p>
+                </div>
+                <button onClick={() => { setShowAddTopicModal(false); setEditingTopic(null); }} className="text-slate hover:text-ink transition-colors cursor-pointer">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="px-6 py-5 space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate uppercase tracking-wide">Title</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Fractions"
+                    value={newTopicTitle}
+                    onChange={(e) => setNewTopicTitle(e.target.value)}
+                    className="mt-1.5 w-full border border-[#ece7f5] rounded-lg px-4 py-3 text-sm outline-none focus:border-violet"
+                  />
+                </div>
+                <div>
+                  <ImagePicker label="Thumbnail" value={newTopicCover} onChange={setNewTopicCover} />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate uppercase tracking-wide">Explanation</label>
+                  <textarea
+                    rows={4}
+                    placeholder="Topic explanation shown to students..."
+                    value={newTopicContent}
+                    onChange={(e) => setNewTopicContent(e.target.value)}
+                    className="mt-1.5 w-full border border-[#ece7f5] rounded-lg px-4 py-3 text-sm resize-none outline-none focus:border-violet"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate uppercase tracking-wide">Assign to teacher</label>
+                  <div ref={teacherDropdownRef} className="relative mt-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setTeacherDropdownOpen((o) => !o)}
+                      className="w-full flex items-center justify-between gap-2 border border-[#ece7f5] rounded-lg px-4 py-3 text-sm bg-white outline-none focus:border-violet cursor-pointer"
+                    >
+                      {newTopicTeacherId ? (
+                        <span className="flex items-center gap-2">
+                          <img
+                            src={teachersList.find((t) => String(t.id) === String(newTopicTeacherId))?.avatar}
+                            alt=""
+                            className="w-5 h-5 rounded-full object-cover"
+                          />
+                          <span className="text-ink">{teachersList.find((t) => String(t.id) === String(newTopicTeacherId))?.name}</span>
+                        </span>
+                      ) : (
+                        <span className="text-slate">No teacher assigned</span>
+                      )}
+                      <ChevronDown size={16} className={`text-slate transition-transform ${teacherDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    {teacherDropdownOpen && (
+                      <div className="absolute z-10 top-full mt-2 w-full bg-white border border-[#ece7f5] rounded-lg shadow-lg shadow-[#2a2049]/10 max-h-40 overflow-y-auto">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewTopicTeacherId("");
+                            setTeacherDropdownOpen(false);
+                          }}
+                          className="w-full flex items-center justify-between px-4 py-2 text-sm text-slate hover:bg-[#faf8ff] cursor-pointer"
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full border border-[#ece7f5] flex items-center justify-center text-[10px] text-slate">—</span>
+                            No teacher
+                          </span>
+                          {!newTopicTeacherId && <Check size={15} className="text-violet" />}
+                        </button>
+                        <div className="border-t border-[#ece7f5]" />
+                        {teachersList.map((t) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => {
+                              setNewTopicTeacherId(String(t.id));
+                              setTeacherDropdownOpen(false);
+                            }}
+                            className="w-full flex items-center justify-between px-4 py-2 text-sm text-ink hover:bg-[#faf8ff] cursor-pointer"
+                          >
+                            <span className="flex items-center gap-2">
+                              <img src={t.avatar} alt={t.name} className="w-5 h-5 rounded-full object-cover" />
+                              {t.name}
+                            </span>
+                            {String(t.id) === String(newTopicTeacherId) && <Check size={15} className="text-violet" />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5]">
+                <button
+                  onClick={() => { setShowAddTopicModal(false); setEditingTopic(null); }}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold border border-[#ece7f5] text-slate hover:bg-paper cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={editingTopic ? saveTopicEdit : addTopic}
+                  disabled={!newTopicTitle.trim()}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet text-white hover:opacity-90 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {editingTopic ? "Save Changes" : "Add Topic"}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      <ConfirmLogoutModal
+        open={confirmLogout}
+        onCancel={() => setConfirmLogout(false)}
+        onConfirm={() => { window.location.href = "/"; }}
+      />
     </DashboardLayout>
   );
 }

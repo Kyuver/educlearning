@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { Home, User, BookOpen, Brain, FlaskConical, Globe, Music, Wrench, Plus, X, Trash2, ArrowLeft, LogOut, AlertTriangle, Loader2, CheckCircle2, School, ClipboardList, Bell } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 import DashboardLayout from "./DashboardLayout";
+import ConfirmLogoutModal from "../compontents/ConfirmLogoutModal";
+import ImagePicker from "../compontents/ImagePicker";
 
 import {
   subjects,
@@ -40,15 +42,19 @@ function TeacherDashboard() {
   const [activeTopic, setActiveTopic] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newQuizTitle, setNewQuizTitle] = useState("");
+  const [showAddTopicModal, setShowAddTopicModal] = useState(false);
+  const [newTopicTitle, setNewTopicTitle] = useState("");
+  const [newTopicContent, setNewTopicContent] = useState("");
+  const [newTopicCover, setNewTopicCover] = useState("");
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [statusFilter, setStatusFilter] = useState("approved");
   const [showInvite, setShowInvite] = useState(true);
   const [notifOpen, setNotifOpen] = useState(false);
 
   useEffect(() => {
-    document.body.style.overflow = showAddModal || confirmDelete || confirmLogout ? "hidden" : "";
+    document.body.style.overflow = showAddModal || showAddTopicModal || confirmDelete || confirmLogout ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [showAddModal, confirmDelete, confirmLogout]);
+  }, [showAddModal, showAddTopicModal, confirmDelete, confirmLogout]);
 
   const [draftContent, setDraftContent] = useState("");
   const [draftTitle, setDraftTitle] = useState("");
@@ -81,6 +87,30 @@ function TeacherDashboard() {
       ),
     );
     setEditingTopicId(null);
+  }
+  function addTopic() {
+    if (!newTopicTitle.trim()) return;
+    const newId = topicsList.length
+      ? Math.max(...topicsList.map((t) => t.id)) + 1
+      : 1;
+    setTopicsList([
+      ...topicsList,
+      {
+        id: newId,
+        subjectId: selectedSubjectId || mySubjects[0]?.id,
+        title: newTopicTitle.trim(),
+        content: newTopicContent.trim() || "No explanation yet.",
+        status: "pending",
+        teacherName: teacherProfile.name,
+        teacherAvatar: "https://i.pravatar.cc/80?img=68",
+        coverImage: newTopicCover.trim() || `https://picsum.photos/seed/topic${newId}/400/300`,
+      },
+    ]);
+    setNewTopicTitle("");
+    setNewTopicContent("");
+    setNewTopicCover("");
+    setShowAddTopicModal(false);
+    toast.success("Topic added! It's pending admin approval.");
   }
   function deleteTopic(topicId) {
     setTopicsList(topicsList.filter((t) => t.id !== topicId));
@@ -257,6 +287,10 @@ function TeacherDashboard() {
                   <Plus size={18} /> Add Quiz
                 </button>
               </div>
+              <div className="bg-white rounded-xl border border-[#ece7f5] p-5">
+                <p className="text-xs font-semibold text-violet uppercase tracking-wide">Explanation</p>
+                <p className="text-sm text-slate mt-2 leading-relaxed">{activeTopic.content || "No explanation yet."}</p>
+              </div>
               <div className="space-y-3">
                 {quizzes.filter((q) => q.topicId === activeTopic.id).length === 0 && <p className="text-sm text-slate text-center py-10">No quizzes yet.</p>}
                 {quizzes.filter((q) => q.topicId === activeTopic.id).map((quiz) => (
@@ -270,7 +304,15 @@ function TeacherDashboard() {
                 <span className="rounded-full bg-violet/10 px-3 py-1 text-sm font-semibold text-violet">
                   <span className="text-slate">Section:</span> {mySection.name}
                 </span>
-                <div className="relative z-50">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddTopicModal(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet text-white text-sm font-semibold hover:opacity-90 cursor-pointer"
+                  >
+                    <Plus size={17} /> Add Topic
+                  </button>
+                  <div className="relative z-50">
                   <button
                     onClick={() => setNotifOpen(!notifOpen)}
                     className="relative w-11 h-11 flex items-center justify-center text-ink  hover:rounded-full transition-colors cursor-pointer"
@@ -370,6 +412,7 @@ function TeacherDashboard() {
                   )}
                 </div>
               </div>
+              </div>
               <div className="flex gap-6 mt-5 mb-5 border-b border-[#ece7f5]">
                 {["approved", "pending", "denied"].map((st) => (
                   <button
@@ -401,15 +444,21 @@ function TeacherDashboard() {
                           <h3 className="font-sora font-semibold text-sm text-ink leading-snug mt-1">
                             {t.title}
                           </h3>
-                          <div className="mt-3 flex items-center gap-2 pt-3 border-t border-[#ece7f5]">
-                            <img
-                              src={t.teacherAvatar}
-                              alt={t.teacherName}
-                              className="w-6 h-6 rounded-full object-cover shrink-0"
-                            />
-                            <span className="text-xs text-slate">{t.teacherName}</span>
-                          </div>
-                        </div>
+                      <div className="mt-3 flex items-center gap-2 pt-3 border-t border-[#ece7f5]">
+                        <img
+                          src={t.teacherAvatar}
+                          alt={t.teacherName}
+                          className="w-6 h-6 rounded-full object-cover shrink-0"
+                        />
+                        <span className="text-xs text-slate">{t.teacherName}</span>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); startEdit(t); }}
+                        className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-[#ece7f5] text-xs font-semibold text-ink hover:bg-paper transition-colors cursor-pointer"
+                      >
+                        <Plus size={14} /> Edit topic
+                      </button>
+                    </div>
                       </div>
                     </div>
                   );
@@ -427,6 +476,56 @@ function TeacherDashboard() {
           onSave={saveQuizFromModal}
           onClose={() => { setShowAddModal(false); setNewQuizTitle(""); }}
         />, document.body
+      )}
+      {showAddTopicModal && createPortal(
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-xl w-full max-w-lg shadow-xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#ece7f5]">
+              <h3 className="font-semibold text-ink text-base">Add Topic</h3>
+              <button onClick={() => setShowAddTopicModal(false)} className="text-slate hover:text-ink cursor-pointer"><X size={20} /></button>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate uppercase tracking-wide">Title</label>
+                <input
+                  type="text"
+                  className="mt-1.5 w-full border border-[#ece7f5] rounded-lg px-4 py-3 text-sm outline-none"
+                  placeholder="e.g. Fractions"
+                  value={newTopicTitle}
+                  onChange={(e) => setNewTopicTitle(e.target.value)}
+                />
+              </div>
+              <div>
+                <ImagePicker label="Picture" value={newTopicCover} onChange={setNewTopicCover} />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate uppercase tracking-wide">Explanation</label>
+                <textarea
+                  className="mt-1.5 w-full border border-[#ece7f5] rounded-lg px-4 py-3 text-sm resize-none outline-none"
+                  rows={5}
+                  placeholder="e.g. A fraction represents a part of a whole..."
+                  value={newTopicContent}
+                  onChange={(e) => setNewTopicContent(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5]">
+              <button
+                onClick={() => setShowAddTopicModal(false)}
+                className="px-4 py-2 rounded-lg text-sm font-semibold border border-[#ece7f5] text-slate hover:bg-paper cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addTopic}
+                disabled={!newTopicTitle.trim()}
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet text-white hover:opacity-90 cursor-pointer flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <CheckCircle2 size={16} /> Add Topic
+              </button>
+            </div>
+          </div>
+        </div>, document.body
       )}
       {editingTopicId && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
@@ -454,6 +553,16 @@ function TeacherDashboard() {
                   onChange={(e) => setDraftCover(e.target.value)}
                 />
               </div>
+              <div>
+                <label className="text-xs font-semibold text-slate uppercase tracking-wide">Explanation</label>
+                <textarea
+                  className="mt-1.5 w-full border border-[#ece7f5] rounded-lg px-4 py-3 text-sm resize-none outline-none"
+                  rows={4}
+                  placeholder="Topic explanation shown to students..."
+                  value={draftContent}
+                  onChange={(e) => setDraftContent(e.target.value)}
+                />
+              </div>
             </div>
             <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5]">
               <button
@@ -472,35 +581,11 @@ function TeacherDashboard() {
           </div>
         </div>, document.body
       )}
-      {confirmLogout && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="bg-white rounded-xl w-full max-w-sm shadow-xl">
-            <div className="px-6 py-5 flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-                <AlertTriangle size={20} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-ink">Log out</h3>
-                <p className="text-sm text-slate mt-2">Are you sure you want to log out?</p>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5]">
-              <button
-                className="px-4 py-2 rounded-lg text-sm font-semibold border border-[#ece7f5] text-slate hover:bg-paper cursor-pointer"
-                onClick={() => setConfirmLogout(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 cursor-pointer"
-                onClick={() => { window.location.href = "/"; }}
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>, document.body
-      )}
+      <ConfirmLogoutModal
+        open={confirmLogout}
+        onCancel={() => setConfirmLogout(false)}
+        onConfirm={() => { window.location.href = "/"; }}
+      />
       {confirmDelete && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="bg-white rounded-xl w-full max-w-sm shadow-xl">

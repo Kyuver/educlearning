@@ -17,7 +17,7 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />{" "}
       </Routes>{" "}
       <Toaster
-        position="top-center"
+        position="top-right"
         toastOptions={{
           style: {
             background: "#6d28d9",
