@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { BookOpen } from "lucide-react";
 import DashboardLayout from "./DashboardLayout";
-import { subjects, topics, quizzes } from "../data/mockData";
+import {
+  subjects,
+  topics,
+  quizzes,
+  sections,
+  studentProfile,
+} from "../data/mockData";
 import "./Dashboard.css";
 function StudentDashboard() {
   const [view, setView] = useState("subjects");
@@ -10,16 +17,37 @@ function StudentDashboard() {
   const [takingQuiz, setTakingQuiz] = useState(false);
   const [answers, setAnswers] = useState({});
   const [score, setScore] = useState(null);
+  const [takenQuizIds, setTakenQuizIds] = useState([]);
+  const mySection = sections.find((s) => s.id === studentProfile.sectionId);
   const subjectTopics = topics.filter((t) => t.subjectId === selectedSubjectId);
   const selectedTopic = topics.find((t) => t.id === selectedTopicId);
   const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);
   const topicQuiz = quizzes.filter((q) => q.topicId === selectedTopicId);
+  const quizTopicIds = [...new Set(quizzes.map((q) => q.topicId))];
+  const pendingQuizTopics = quizTopicIds
+    .filter((id) => !takenQuizIds.includes(id))
+    .map((id) => topics.find((t) => t.id === id));
+  function resetToHome() {
+    setView("subjects");
+    setSelectedSubjectId(null);
+    setSelectedTopicId(null);
+    setTakingQuiz(false);
+    setScore(null);
+  }
   function handleSelectSubject(id) {
     setView("subjects");
     setSelectedSubjectId(id);
     setSelectedTopicId(null);
     setTakingQuiz(false);
     setScore(null);
+  }
+  function goToTopic(topic) {
+    setView("subjects");
+    setSelectedSubjectId(topic.subjectId);
+    setSelectedTopicId(topic.id);
+    setTakingQuiz(false);
+    setScore(null);
+    setAnswers({});
   }
   function selectAnswer(quizId, choice) {
     setAnswers({ ...answers, [quizId]: choice });
@@ -30,6 +58,9 @@ function StudentDashboard() {
       if (answers[q.id] === q.correctAnswer) correct += 1;
     });
     setScore({ correct, total: topicQuiz.length });
+    if (!takenQuizIds.includes(selectedTopicId)) {
+      setTakenQuizIds([...takenQuizIds, selectedTopicId]);
+    }
   }
   const topItem = (
     <>
@@ -39,14 +70,14 @@ function StudentDashboard() {
         onClick={() => setView("profile")}
       >
         {" "}
-        <span>👤</span> Profile{" "}
+        <span></span> Profile{" "}
       </div>{" "}
       <div
         className={`dsb-nav-item${view === "subjects" && !selectedSubjectId ? " active" : ""}`}
-        onClick={() => setView("subjects")}
+        onClick={resetToHome}
       >
         {" "}
-        <span>🏠</span> Student Dashboard{" "}
+        <span></span> Student Dashboard{" "}
       </div>{" "}
     </>
   );
@@ -79,13 +110,11 @@ function StudentDashboard() {
               </div>{" "}
               <div className="dsb-profile-bodycard">
                 {" "}
-                <h2>Demo Student</h2>{" "}
+                <h2>{studentProfile.name}</h2>{" "}
                 <div className="dsb-profile-row">
                   School: KlikAral Demo School
                 </div>{" "}
-                <div className="dsb-profile-row">
-                  Section: Grade 7 - St. Peter
-                </div>{" "}
+                <div className="dsb-profile-row">Section: {mySection.name}</div>{" "}
                 <Link to="/" className="dsb-profile-logout">
                   Logout
                 </Link>{" "}
@@ -97,22 +126,58 @@ function StudentDashboard() {
       {view === "subjects" && (
         <div>
           {" "}
-          <h1>Student dashboard</h1>{" "}
           {!selectedSubjectId && (
-            <p>Select a subject from the sidebar to view its lessons.</p>
+            <>
+              {" "}
+              <h1>Student dashboard</h1>{" "}
+              <div className="dsb-notify-box">
+                {" "}
+                <h3>Quiz reminders</h3>{" "}
+                {pendingQuizTopics.length === 0 && <p>You're all caught up!</p>}{" "}
+                {pendingQuizTopics.map((t) => {
+                  const subj = subjects.find((s) => s.id === t.subjectId);
+                  return (
+                    <div
+                      key={t.id}
+                      className="dsb-notify-item"
+                      onClick={() => goToTopic(t)}
+                    >
+                      {" "}
+                      {subj.name} — "{t.title}" quiz not yet taken{" "}
+                    </div>
+                  );
+                })}{" "}
+              </div>{" "}
+              <p>Select a subject from the sidebar to view its lessons.</p>{" "}
+            </>
           )}{" "}
           {selectedSubjectId && !selectedTopicId && (
             <div>
               {" "}
-              <h2>{selectedSubject.name} topics</h2>{" "}
-              <ul className="dsb-topic-list">
+              <h1>{selectedSubject.name} Topics</h1>{" "}
+              <div className="dsb-topic-card-grid">
                 {" "}
-                {subjectTopics.map((t) => (
-                  <li key={t.id} onClick={() => setSelectedTopicId(t.id)}>
-                    {t.title}
-                  </li>
+                {subjectTopics.map((t, i) => (
+                  <div
+                    key={t.id}
+                    className="dsb-topic-card"
+                    onClick={() => setSelectedTopicId(t.id)}
+                  >
+                    {" "}
+                    <div className={`dsb-topic-thumb grad-${i % 3}`}>
+                      {" "}
+                      <BookOpen size={30} />{" "}
+                    </div>{" "}
+                    <div className="dsb-topic-card-body">
+                      {" "}
+                      <h4>{t.title}</h4>{" "}
+                      <div className="dsb-topic-card-meta">
+                        {selectedSubject.name} — {mySection.name}
+                      </div>{" "}
+                    </div>{" "}
+                  </div>
                 ))}{" "}
-              </ul>{" "}
+              </div>{" "}
             </div>
           )}{" "}
           {selectedTopic && !takingQuiz && (
@@ -131,7 +196,10 @@ function StudentDashboard() {
                     setAnswers({});
                   }}
                 >
-                  Take quiz
+                  {" "}
+                  {takenQuizIds.includes(selectedTopicId)
+                    ? "Retake quiz"
+                    : "Take quiz"}{" "}
                 </button>
               )}{" "}
             </div>

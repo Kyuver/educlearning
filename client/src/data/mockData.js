@@ -12,6 +12,9 @@ export const teacherProfile = {
   sectionId: 1,
   subjectIds: [1, 2],
 };
+
+export const studentProfile = { name: "Demo Student", sectionId: 1 };
+
 export const topics = [
   {
     id: 1,
@@ -19,48 +22,57 @@ export const topics = [
     title: "Fractions",
     content:
       "A fraction represents a part of a whole. For example, 1/2 means one part out of two equal parts. Fractions are made up of a numerator (top number) and a denominator (bottom number).",
+    lessonPlan:
+      "Objective: Students will identify numerators and denominators. Materials: Fraction strips, whiteboard. Activity: Students group into pairs and use fraction strips to represent given fractions. Assessment: 5-item board work.",
   },
   {
     id: 2,
     subjectId: 1,
     title: "Basic Algebra",
     content: "Lesson content coming soon.",
+    lessonPlan: "Lesson content coming soon.",
   },
   {
     id: 3,
     subjectId: 1,
     title: "Geometry Basics",
     content: "Lesson content coming soon.",
+    lessonPlan: "Lesson content coming soon.",
   },
   {
     id: 4,
     subjectId: 2,
     title: "Grammar Essentials",
     content: "Lesson content coming soon.",
+    lessonPlan: "Lesson content coming soon.",   
   },
   {
     id: 5,
     subjectId: 2,
     title: "Reading Comprehension",
     content: "Lesson content coming soon.",
+    lessonPlan: "Lesson content coming soon.",
   },
   {
     id: 6,
     subjectId: 3,
     title: "Scientific Method",
     content: "Lesson content coming soon.",
+    lessonPlan: "Lesson content coming soon.",
   },
   {
     id: 7,
     subjectId: 3,
     title: "Basic Chemistry",
     content: "Lesson content coming soon.",
+    lessonPlan: "Lesson content coming soon.",
   },
   {
     id: 8,
     subjectId: 4,
     title: "Philippine History",
     content: "Lesson content coming soon.",
+    lessonPlan: "Lesson content coming soon.",
   },
   {
     id: 9,
@@ -73,6 +85,7 @@ export const topics = [
     subjectId: 6,
     title: "Basic Computer Skills",
     content: "Lesson content coming soon.",
+    lessonPlan: "Lesson content coming soon.",
   },
 ];
 export const quizzes = [

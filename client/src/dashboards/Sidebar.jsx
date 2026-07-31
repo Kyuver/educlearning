@@ -14,7 +14,7 @@ function Sidebar({ subjects, selectedSubjectId, onSelectSubject, topItem }) {
           onClick={() => setCoursesOpen(!coursesOpen)}
         >
           {" "}
-          <span>📚</span> Courses{" "}
+          <span></span> Courses{" "}
           <motion.span
             className="dsb-chevron"
             animate={{ rotate: coursesOpen ? 90 : 0 }}
