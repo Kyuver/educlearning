@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Home, User, BookOpen, Brain, FlaskConical, Globe, Music, Wrench, Plus, X, Trash2, ArrowLeft, LogOut, AlertTriangle, Loader2, CheckCircle2, School, ClipboardList, Bell } from "lucide-react";
-import { Toaster, toast } from "react-hot-toast";
+import { Home, User, BookOpen, Brain, FlaskConical, Globe, Music, Wrench, Plus, X, Trash2, ArrowLeft, AlertTriangle, Loader2, CheckCircle2, School, ClipboardList, Bell, Edit } from "lucide-react";
+import { toast } from "react-hot-toast";
 import DashboardLayout from "./DashboardLayout";
 import ConfirmLogoutModal from "../compontents/ConfirmLogoutModal";
 import ImagePicker from "../compontents/ImagePicker";
@@ -456,7 +456,7 @@ function TeacherDashboard() {
                         onClick={(e) => { e.stopPropagation(); startEdit(t); }}
                         className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-[#ece7f5] text-xs font-semibold text-ink hover:bg-paper transition-colors cursor-pointer"
                       >
-                        <Plus size={14} /> Edit topic
+                        <Edit size={14} /> Edit topic
                       </button>
                     </div>
                       </div>
@@ -544,14 +544,7 @@ function TeacherDashboard() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate uppercase tracking-wide">Picture</label>
-                <input
-                  type="text"
-                  className="mt-1.5 w-full border border-[#ece7f5] rounded-lg px-4 py-3 text-sm outline-none"
-                  placeholder="Paste an image URL..."
-                  value={draftCover}
-                  onChange={(e) => setDraftCover(e.target.value)}
-                />
+                <ImagePicker label="Picture" value={draftCover} onChange={setDraftCover} />
               </div>
               <div>
                 <label className="text-xs font-semibold text-slate uppercase tracking-wide">Explanation</label>

@@ -71,6 +71,7 @@ function AdminDashboard() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteTeacherId, setInviteTeacherId] = useState("");
   const [inviteCourseId, setInviteCourseId] = useState("");
+  const [inviteTopicId, setInviteTopicId] = useState("");
   const [sending, setSending] = useState(false);
   const [viewTopic, setViewTopic] = useState(null);
   const [showAddTopicModal, setShowAddTopicModal] = useState(false);
@@ -214,7 +215,8 @@ function AdminDashboard() {
       setSending(false);
       setShowInviteModal(false);
       setInviteTeacherId("");
-      setInviteCourse("");
+      setInviteCourseId("");
+      setInviteTopicId("");
       toast.success(`Invitation sent to ${teacher.name}!`);
     }, 700);
   }
@@ -456,13 +458,56 @@ function AdminDashboard() {
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-slate uppercase tracking-wide">Course</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Computer Literacy"
-                    value={inviteCourse}
-                    onChange={(e) => setInviteCourse(e.target.value)}
-                    className="mt-1.5 w-full border border-[#ece7f5] rounded-lg px-4 py-3 text-sm outline-none focus:border-violet"
-                  />
+                  <div ref={courseDropdownRef} className="relative mt-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setCourseDropdownOpen((o) => !o)}
+                      className="w-full flex items-center justify-between gap-2 border border-[#ece7f5] rounded-lg px-4 py-3 text-sm bg-white outline-none focus:border-violet cursor-pointer"
+                    >
+                      {inviteTopicId ? (
+                        <span className="flex items-center gap-2 truncate">
+                          <span className="text-ink truncate">{topicsList.find((t) => String(t.id) === String(inviteTopicId))?.title}</span>
+                          <span className="text-xs text-slate shrink-0">· {subjectsList.find((s) => String(s.id) === String(inviteCourseId))?.name}</span>
+                        </span>
+                      ) : (
+                        <span className="text-slate">Select a topic...</span>
+                      )}
+                      <ChevronDown size={16} className={`text-slate transition-transform ${courseDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    {courseDropdownOpen && (
+                      <div className="absolute z-10 top-full mt-2 w-full bg-white border border-[#ece7f5] rounded-lg shadow-lg shadow-[#2a2049]/10 max-h-56 overflow-y-auto">
+                        {subjectsList.map((s) => {
+                          const courseTopics = topicsList.filter((t) => t.subjectId === s.id);
+                          return (
+                            <div key={s.id}>
+                              <div className="flex items-center gap-2 px-4 py-2 text-[11px] font-semibold text-slate uppercase tracking-wide bg-[#faf8ff]">
+                                <span className={`w-2.5 h-2.5 rounded-full bg-gradient-to-br ${subjectGradients[s.id] || "from-violet to-purple-400"} shrink-0`} />
+                                {s.name}
+                              </div>
+                              {courseTopics.length === 0 && (
+                                <div className="px-4 py-2 text-sm text-slate/70">No topics yet</div>
+                              )}
+                              {courseTopics.map((t) => (
+                                <button
+                                  key={t.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setInviteCourseId(String(s.id));
+                                    setInviteTopicId(String(t.id));
+                                    setCourseDropdownOpen(false);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-ink hover:bg-[#faf8ff] cursor-pointer"
+                                >
+                                  <span className="truncate">{t.title}</span>
+                                  {String(t.id) === String(inviteTopicId) && <Check size={15} className="text-violet shrink-0 ml-auto" />}
+                                </button>
+                              ))}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5]">
@@ -520,7 +565,7 @@ function AdminDashboard() {
               </div>
               <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5]">
                 <button
-                  onClick={() => rejectTopic(viewTopic.id)}
+                  onClick={() => { rejectTopic(viewTopic.id); setViewTopic(null); }}
                   className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 cursor-pointer"
                 >
                   Decline
