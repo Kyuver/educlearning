@@ -1,0 +1,180 @@
+// ============================================================
+// Prisma Schema — EducLearning
+// Single-file schema (Prisma does not support multi-file).
+// Sections:
+//   1. Generator & Datasource
+//   2. Enums
+//   3. Users, Roles & Sections
+//   4. Learning Content (Subjects, Topics, Quizzes)
+//   5. Invitations & Notifications
+// ============================================================
+
+// ------------------------------------------------------------
+// 1. GENERATOR & DATASOURCE
+// ------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ------------------------------------------------------------
+// 2. ENUMS
+// ------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum NotificationType {
+  ANNOUNCEMENT
+  INVITATION
+  TOPIC_APPROVED
+  QUIZ_ASSIGNED
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+}
+
+// ------------------------------------------------------------
+// 3. USERS, ROLES & SECTIONS
+// All three roles (Admin / Teacher / Student) share one User
+// table. Student data (sectionId) and Teacher data (subject)
+// both live directly on User as optional columns.
+// ------------------------------------------------------------
+
+model User {
+  id        Int      @id @default(autoincrement())
+  password  String
+  name      String
+  avatar    String?
+  role      Role     @default(STUDENT)
+  sectionId Int?  // for teacher and student
+  subject   String? // for teacher
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invitesSent   Invitation[] @relation("InviteSentBy")
+  invitations   Invitation[] @relation("InviteReceivedBy")
+  notificationsSent    Notification[] @relation("NotificationSent")
+  notificationsReceived Notification[] @relation("NotificationReceived")
+  section       Section? @relation(fields: [sectionId], references: [id])
+  topics        Topic[]  @relation("AssignedTopicTeacher")
+  quizAttempts  QuizAttempt[]
+}
+
+model Section {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  users     User[]
+}
+
+// ------------------------------------------------------------
+// 4. LEARNING CONTENT
+// ------------------------------------------------------------
+
+model Subject {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+
+  topics Topic[]
+}
+
+model Topic {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  coverImage  String?
+  status      Status   @default(PENDING)
+  isDeleted   Boolean  @default(false)
+  subjectId   Int
+  teacherId   Int?
+
+  subject  Subject @relation(fields: [subjectId], references: [id])
+  teacher  User?   @relation("AssignedTopicTeacher", fields: [teacherId], references: [id])
+  quizzes  Quiz[]
+}
+
+model Quiz {
+  id        Int    @id @default(autoincrement())
+  title     String
+  topicId   Int
+
+  topic     Topic         @relation(fields: [topicId], references: [id])
+  questions Question[]
+  attempts  QuizAttempt[]
+}
+
+model Question {
+  id            Int    @id @default(autoincrement())
+  quizId        Int
+  question      String
+  choices       Json
+  correctAnswer Int
+
+  quiz Quiz @relation(fields: [quizId], references: [id])
+}
+
+model QuizAttempt {
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  quizId           Int
+  score            Int
+  totalQuestion    Int
+  submittedAnswers Json?
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  quiz Quiz @relation(fields: [quizId], references: [id])
+}
+
+// ------------------------------------------------------------
+// 5. INVITATIONS & NOTIFICATIONS
+// ------------------------------------------------------------
+
+model Invitation {
+  id           Int          @id @default(autoincrement())
+  courseName   String
+  status       InviteStatus @default(PENDING)
+  sentById     Int
+  receivedById Int
+  createdAt    DateTime     @default(now())
+
+  sentBy   User @relation("InviteSentBy", fields: [sentById], references: [id])
+  received User @relation("InviteReceivedBy", fields: [receivedById], references: [id])
+}
+
+model Notification {
+  id          Int                @id @default(autoincrement())
+  type        NotificationType
+  title       String
+  message     String
+  status      NotificationStatus @default(UNREAD)
+  senderId    Int?
+  receiverId  Int
+  createdAt   DateTime           @default(now())
+
+  sender   User? @relation("NotificationSent", fields: [senderId], references: [id])
+  receiver User  @relation("NotificationReceived", fields: [receiverId], references: [id])
+}
