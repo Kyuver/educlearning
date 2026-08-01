@@ -1,35 +1,88 @@
 import axios from "axios";
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: "http://localhost:5001",
   headers: { "Content-Type": "application/json" },
 });
 
 api.interceptors.response.use(
-  (res) => res,
+  (res) => res.data,
   (err) => {
     return Promise.reject(err?.response?.data || err);
   },
 );
 
-export async function fetchById(table, id) {
-  return api.get(`/api/${table}/${id}`);
+// ----- generic reads -----
+
+export async function get(table, id) {
+  const res = await api.get(id ? `/api/${table}/${id}` : `/api/${table}`);
+  return res.data;
 }
 
-export async function fetchByStatus(table, status) {
-  return api.get(`/api/${table}/${status}`);
+export async function getByStatus(table, status) {
+  const res = await api.get(`/api/${table}/${status}`);
+  return res.data;
 }
 
-export async function fetchUserByRole(role) {
-  return api.get(`/api/user/${role}`);
+// ----- subjects -----
+
+export async function fetchSubjects() {
+  const res = await api.get("/api/subject");
+  return res.data;
+}
+
+export async function fetchSubject(subjectId) {
+  const res = await api.get(`/api/subject/${subjectId}`);
+  return res.data;
+}
+
+// subject + its topics, filtered by status on the SERVER
+export async function fetchSubjectTopics(subjectId, status) {
+  const res = await api.get(
+    status
+      ? `/api/subject/${subjectId}/topics/${status}`
+      : `/api/subject/${subjectId}/topics`,
+  );
+  return res.data;
+}
+
+// ----- topics -----
+
+export async function fetchTopics(status) {
+  const res = await api.get(`/api/topic/${status}`);
+  return res.data;
+}
+
+// ----- users / notifications -----
+
+export async function fetchUsers(role) {
+  const res = await api.get(`/api/user/${role}`);
+  return res.data;
+}
+
+export async function fetchUnassignedTopics() {
+  const res = await api.get("/api/topic/unassigned");
+  return res.data;
 }
 
 export async function fetchNotifications(status) {
-  return api.get(status ? `/api/notification/${status}` : `/api/notification`);
+  const res = await api.get(status ? `/api/notification/${status}` : `/api/notification`);
+  return res.data;
 }
 
 export async function fetchUserNotifications(userId) {
-  return api.get(`/api/notification/user/${userId}`);
+  const res = await api.get(`/api/notification/user/${userId}`);
+  return res.data;
+}
+
+// ----- writes -----
+
+export async function uploadImage(file) {
+  const form = new FormData();
+  form.append("image", file);
+  return api.post("/api/upload", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 }
 
 export async function create(table, data) {

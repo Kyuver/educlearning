@@ -1,14 +1,59 @@
 import prisma from "../db"
 
-export async function retrieveTopic(req: any, res: any) {
-  const { status } = req.params
+export const allowedTables = ["user", "topic", "quiz", "question", "invitation", "notification", "quizAttempt", "subject", "section"]
+
+// fetch all records for a table
+export async function retrieveAll(req: any, res: any) {
+  const { table } = req.params
+
+  try {
+    if (!allowedTables.includes(table)) {
+      return res.status(400).json({ status: 'error', msg: `Invalid table: ${table}` })
+    }
+
+    const data = await (prisma as any)[table].findMany({})
+
+    return res.json({ status: 'success', msg: `successfully retrieved ${table}s`, data: data })
+  }
+  catch (e: any) {
+    console.log(e.message)
+    return res.status(500).json({ status: 'error', msg: e.message })
+  }
+}
+
+// topics of one subject, optionally filtered by status
+export async function retrieveSubjectTopics(req: any, res: any) {
+  const { subjectId, status } = req.params
 
   try {
     const data = await prisma.topic.findMany({
-      where: { status, isDeleted: false }
+      where: {
+        subjectId: Number(subjectId),
+        isDeleted: false,
+        ...(status ? { status } : {}),
+      },
     })
 
-    return res.json({ status: 'success', msg: "successfully retrieved courses", data: data })
+    return res.json({ status: 'success', msg: "successfully retrieved topics", data: data })
+  }
+  catch (e: any) {
+    console.log(e.message)
+    return res.status(500).json({ status: 'error', msg: e.message })
+  }
+}
+
+// topics that have no teacher assigned yet
+export async function retrieveUnassignedTopics(req: any, res: any) {
+  try {
+    const data = await prisma.topic.findMany({
+      where: {
+        isDeleted: false,
+        teacherId: null,
+      },
+      include: { subject: true },
+    })
+
+    return res.json({ status: 'success', msg: "successfully retrieved unassigned topics", data: data })
   }
   catch (e: any) {
     console.log(e.message)

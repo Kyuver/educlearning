@@ -1,13 +1,19 @@
+import { useQuery } from "@tanstack/react-query";
+import { fetchSubjects } from "../lib/api";
 import Sidebar from "./Sidebar";
 
 function DashboardLayout({
-  subjects,
   selectedSubjectId,
   onSelectSubject,
   topItem,
   onLogout,
   children,
 }) {
+  const { data: subjects = [] } = useQuery({
+    queryKey: ["subjects"],
+    queryFn: fetchSubjects,
+  });
+
   return (
     <div className="flex min-h-screen bg-paper font-inter">
       <Sidebar

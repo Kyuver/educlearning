@@ -8,6 +8,7 @@ export async function authenticate({ name, password, role }) {
     role: role
   });
 
-  const user = res.data.data;
+  const user = res.data;
   console.log(user)
+  return user.id
 }

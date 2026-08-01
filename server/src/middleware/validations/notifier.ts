@@ -4,7 +4,7 @@ export const invitationSchema = z.object({
   courseName: z.string().min(1, 'name of course required.'),
   status: z.enum(["PENDING", 'ACCEPTED', "DENIED"]),
   sentById: z.number().int().min(1, 'sender id required.'),
-  receivedId:  z.number().int().min(1, 'receiver id required.'),
+  receivedById:  z.number().int().min(1, 'receiver id required.'),
 })
 
 export const notificationSchema = z.object({

@@ -23,7 +23,6 @@ const previews = [
 function Showcase() {
   return (
     <>
-      {" "}
       {previews.map((p, i) => {
         const Icon = p.icon;
         const isReverse = i % 2 === 1;
