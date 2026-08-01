@@ -32,27 +32,38 @@ export async function retrieveUser(req: any, res: any) {
   }
 }
 
-// users base on id and role
-export async function retrieveDataById(req: any, res: any) {
-  const { id, role } = req.params
-  try {
-    const include = {
-      section: true,
-      topics: true,
-      invitesSent: true,
-      invitations: true,
-      notificationsSent: true,
-      notificationsReceived: true,
-      ...(role === "student" ? { quizAttempts: true } : {}),
-    }
+// which relations to include per table
+const includes: Record<string, any> = {
+  user: {
+    section: true,
+    topics: true,
+    invitesSent: true,
+    invitations: true,
+    notificationsSent: true,
+    notificationsReceived: true,
+    quizAttempts: true,
+  },
+  subject: { topics: true },
+  topic: { subject: true, teacher: true, quizzes: true },
+  quiz: { topic: true, questions: true, attempts: true },
+  question: { quiz: true },
+  quizAttempt: { user: true, quiz: true },
+  invitation: { sentBy: true, received: true },
+  notification: { sender: true, receiver: true },
+  section: { users: true },
+}
 
-    const data = await prisma.user.findUnique({
+// any table by id, with its related data
+export async function retrieveDataById(req: any, res: any) {
+  const { table, id } = req.params
+  try {
+    const data = await (prisma as any)[table].findUnique({
       where: { id: Number(id) },
-      include,
+      include: includes[table],
     })
 
     if (!data) {
-      return res.status(404).json({ status: 'error', msg: "User not found" })
+      return res.status(404).json({ status: 'error', msg: `${table} not found` })
     }
 
     return res.json({ status: 'success', msg: 'successfully retrieved record', data: data })

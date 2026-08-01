@@ -4,6 +4,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec \"tsx src/index.ts\"",
+    "seed": "tsx src/seed.ts",
+    "dev:seed": "tsx src/seed.ts && nodemon --watch src --ext ts --exec \"tsx src/index.ts\"",
     "build": "tsc",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
