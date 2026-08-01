@@ -26,7 +26,8 @@ crud.delete('/api/:table/:id/soft', softDeleteById)
 crud.post('/api/:table/:id/restore', restoreById)
 
 // route for notifications
-crud.get('/api/notification/:status?', getNotification)
+crud.get('/api/notification', getNotification)
+crud.get('/api/notification/:status', getNotification)
 crud.get('/api/notification/user/:id', getNotificationUserById)
 crud.post('/api/notification', sendNotification)
 

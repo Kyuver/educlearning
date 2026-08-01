@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { GraduationCap, BookOpen, Settings2 } from "lucide-react";
+import { authenticate } from "../lib/auth";
 function Roles() {
   return (
     <section id="roles" className="roles">
@@ -26,7 +27,13 @@ function Roles() {
               <li>Browse lessons & study materials</li>{" "}
               <li>Take quizzes & track practice progress</li>{" "}
             </ul>{" "}
-            <Link to="/student" className="btn btn-gold">
+            <Link to="/student"
+              onClick={() => authenticate({
+                name: "student",
+                password: "student",
+                role: 'STUDENT'
+              })}
+              className="btn btn-gold">
               Log in as Student
             </Link>{" "}
           </div>{" "}
@@ -43,7 +50,13 @@ function Roles() {
               <li>Create & edit lesson materials</li>{" "}
               <li>Track student progress & assignments</li>{" "}
             </ul>{" "}
-            <Link to="/teacher" className="btn btn-light-outline">
+            <Link to="/teacher"
+              onClick={() => authenticate({
+                name: "teacher",
+                password: "teacher",
+                role: "TEACHER"
+              })}
+              className="btn btn-light-outline">
               Log in as Teacher
             </Link>{" "}
           </div>{" "}
@@ -60,7 +73,11 @@ function Roles() {
               <li>Approve / delete controls</li>{" "}
               <li>Visual overview of the platform</li>{" "}
             </ul>{" "}
-            <Link to="/admin" className="btn btn-light-outline">
+            <Link to="/admin"
+              onClick={() => authenticate({
+                name: "admin", password: "admin", role: "ADMIN"
+              })}
+              className="btn btn-light-outline">
               Log in as Admin
             </Link>{" "}
           </div>{" "}

@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import prisma from "./db";
 
 const users = [
@@ -13,8 +14,14 @@ async function seed() {
     });
 
     if (!existing) {
+      const hashedPassword = await bcrypt.hash(user.password, 10);
+
       await prisma.user.create({
-        data: { name: user.name, password: user.password, role: user.role },
+        data: {
+          name: user.name,
+          password: hashedPassword,
+          role: user.role,
+        },
       });
       console.log(`[seed] created user: ${user.name} (${user.role})`);
     } else {
