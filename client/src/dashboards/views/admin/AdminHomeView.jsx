@@ -7,7 +7,7 @@ import { fetchSubjects, fetchUsers, get } from "../../../lib/api";
 import { useMemo } from "react";
 import { useState } from "react";
 import { TopicDetailsModal } from "./AdminReview";
-import { MODAL, useShowModal } from "@/store/showModal";
+import { MODAL, useShowModal } from "@store";
 import { useSection } from "@/store";
 
 const SECTIONS = [
@@ -201,8 +201,10 @@ function AdminHomeView() {
                       </div>
 
                       <button
-                        onClick={() => setViewTopic(topic)}
-                        className="w-full mt-4 pt-4 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-violet bg-violet/10 hover:bg-violet/20 transition-colors cursor-pointer"
+                        onClick={() => {
+                          setViewTopic(topic)
+                        }}
+                        className="w-full mt-2 py-2.5 flex items-center justify-center gap-1 px-3 rounded-lg text-xs font-semibold text-violet bg-violet/10 hover:bg-violet/20 transition-colors cursor-pointer"
                       >
                         View Details
                         <ChevronRight size={14} />

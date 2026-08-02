@@ -66,19 +66,8 @@ function AdminSubjectTopicsView({ selectedSubjectId, onTopicClick }) {
 
               <div className="p-4 h-45 flex flex-col">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-violet/10 text-violet truncate">
+                  <span className="px-2.5 py-1 rounded-md text-xs font-medium bg-violet/10 text-violet truncate">
                     {topic.subject?.name ?? "General"}
-                  </span>
-                  <span
-                    className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium capitalize ${
-                      topic.status === "approved"
-                        ? "bg-emerald-50 text-emerald-600"
-                        : topic.status === "rejected"
-                        ? "bg-red-50 text-red-600"
-                        : "bg-amber-50 text-amber-600"
-                    }`}
-                  >
-                    {topic.status}
                   </span>
                 </div>
 
@@ -87,10 +76,10 @@ function AdminSubjectTopicsView({ selectedSubjectId, onTopicClick }) {
                 </h3>
 
                 <div className="flex items-center gap-2 mt-3">
-                  <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 text-xs font-semibold">
+                  <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 text-xs font-semibold">
                     {(topic.teacher?.name ?? topic.teacherName ?? "?")[0]?.toUpperCase()}
                   </div>
-                  <p className="text-md text-slate truncate">
+                  <p className="text-sm text-slate font-medium truncate">
                     {topic.teacher?.name ?? topic.teacherName ?? "Unknown"}
                   </p>
                 </div>

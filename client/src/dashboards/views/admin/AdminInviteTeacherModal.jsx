@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { X, ChevronDown, Check, Send, Loader2 } from "lucide-react";
 import { fetchUsers, fetchUnassignedTopics } from "../../../lib/api";
 import { useSendInvitation } from "../../../hooks/useMutations";
-import { useShowModal } from "@/store/showModal";
+import { useShowModal } from "@store";
 
 const subjectGradients = [
   "from-violet to-purple-400",

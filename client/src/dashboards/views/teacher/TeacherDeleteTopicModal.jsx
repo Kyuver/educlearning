@@ -1,4 +1,4 @@
-import { useShowModal } from "@/store/showModal";
+import { useShowModal } from "@store";
 import { AlertTriangle } from "lucide-react";
 
 function TeacherDeleteTopicModal() {

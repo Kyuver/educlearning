@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronRight, BookOpen, LogOut } from "lucide-react";
+import { ChevronRight, BookOpen, LogOut, GraduationCap } from "lucide-react";
 
 function Sidebar({ subjects, selectedSubjectId, onSelectSubject, topItem, onLogout }) {
   const [coursesOpen, setCoursesOpen] = useState(true);
+
   return (
     <aside className="w-64 h-screen sticky top-0 bg-gradient-to-b from-[#7c5cfc] to-[#2a2049] text-white flex flex-col shrink-0">
-      <div className="px-6 py-5 text-lg font-bold text-white">KlikAral</div>
+      <div className="px-6 py-5 text-lg font-bold text-white flex gap-2">
+        <GraduationCap className="mt-0.5"/>
+        KlikAral</div>
       <nav className="flex-1 overflow-y-auto">
         {topItem}
         <div

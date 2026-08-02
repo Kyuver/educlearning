@@ -3,24 +3,35 @@ import { X, ImagePlus } from "lucide-react";
 import { useSetData } from "../../../store/useData";
 import { fetchSubjects, uploadImage } from "../../../lib/api";
 import { useCreateData } from "../../../hooks/useMutations";
-import { useShowModal } from "@/store/showModal";
+import { useShowModal } from "@store";
 
-function TeacherAddTopicModal() {
+function TeacherAddTopicModal({ subjectId }) {
   const closeModal = useShowModal((s) => s.closeModal);
-  const modalSubjectId = useShowModal((s) => s.modalData);
   const fileRef = useRef(null);
   const { data, setData } = useSetData();
   const [subjects, setSubjects] = useState([]);
-  const [subjectId, setSubjectId] = useState(modalSubjectId);
   const createTopic = useCreateData(closeModal);
 
   useEffect(() => {
     fetchSubjects().then(setSubjects);
   }, []);
 
-  const subject = subjects.find((s) => s.id === subjectId);
+  const subject = subjects.find((s) => s.id === Number(subjectId));
   const subjectName = subject?.name ?? "Subject Name";
 
+  // console.log(subjectId);
+  // console.log(subject);
+  // const { title, coverImage, content, status, ...others } = data
+
+  // subbject: Number(subjectId)
+  // title: title
+  // coverImage: title
+  // content: content
+  // status: status
+  const params = new URLSearchParams(window.location.search);
+  const teacherId = params.get("id")
+
+  console.log("here",teacherId)
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4">
       <div className="bg-white rounded-xl w-full max-w-lg shadow-xl">
@@ -34,21 +45,6 @@ function TeacherAddTopicModal() {
           </button>
         </div>
         <div className="px-6 py-5 space-y-4">
-          <div>
-            <label className="text-xs font-semibold text-slate uppercase tracking-wide">Subject</label>
-            <select
-              value={subjectId ?? ""}
-              onChange={(e) => setSubjectId(e.target.value ? Number(e.target.value) : null)}
-              className="mt-1.5 w-full border border-[#ece7f5] rounded-lg px-4 py-3 text-sm bg-white outline-none focus:border-violet cursor-pointer"
-            >
-              <option value="">Select a subject</option>
-              {subjects.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </div>
           <div>
             <label className="text-xs font-semibold text-slate uppercase tracking-wide">Title</label>
             <input
@@ -124,7 +120,14 @@ function TeacherAddTopicModal() {
             Cancel
           </button>
           <button
-            onClick={() => createTopic.mutate({ table: "topic", data: { ...data, status: "PENDING", subjectId } })}
+            onClick={() => createTopic.mutate({
+              table: "topic",
+              data: {
+                ...data, status: "PENDING",
+                subjectId: Number(subjectId),
+                teacherId: Number(teacherId)
+              }
+            })}
             className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet text-white hover:opacity-90 cursor-pointer"
           >
             Add Topic

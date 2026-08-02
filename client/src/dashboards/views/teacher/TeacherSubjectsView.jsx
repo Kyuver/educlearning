@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { fetchUserNotifications, fetchTopics, fetchSubjectTopics } from "../../../lib/api";
 import { MODAL, useNotification, useSection } from "@/store";
-import { useShowModal } from "@/store/showModal";
+import { useShowModal } from "@store";
 
 function TopicCard({ topic, onClick }) {
   return (

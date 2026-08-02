@@ -19,7 +19,7 @@ function TeacherDashboard() {
 
   const { view, setView } = useView();
   const { modal, setModal, closeModal } = useShowModal();
-  const setSection = useSection((s) => s.setSection);
+  const {setSection} = useSection()
 
   useEffect(() => {
     setSection("approved");
@@ -70,6 +70,7 @@ function TeacherDashboard() {
     setSelectedSubjectId(id);
   };
 
+  console.log("id of the subject section from teacher dashboard", selectedSubjectId)
   return (
     <DashboardLayout
       subjects={subjects}
@@ -82,7 +83,8 @@ function TeacherDashboard() {
       {view === "dashboard" && activeTopic && <TeacherTopicQuizzesView topic={activeTopic} onBack={() => setActiveTopic(null)} />}
       {view === "dashboard" && !activeTopic && <TeacherSubjectsView selectedSubjectId={selectedSubjectId} onTopicClick={(topic) => { setActiveTopic(topic); }} />}
       {modal === "AddQuizFormModal" && <AddQuizFormModal topic={activeTopic} />}
-      {modal === "TeacherAddTopicModal" && <TeacherAddTopicModal />}
+
+      {modal === "TeacherAddTopicModal" && <TeacherAddTopicModal subjectId={selectedSubjectId} />}
       {modal === "TeacherEditTopicModal" && <TeacherEditTopicModal />}
 
       {modal === "TeacherDeleteTopicModal" && <TeacherDeleteTopicModal />}

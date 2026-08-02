@@ -4,7 +4,7 @@ import { X, ChevronDown, Check, ImagePlus } from "lucide-react";
 import { useSetData } from "../../../store/useData";
 import { fetchSubjects, uploadImage } from "../../../lib/api";
 import { useCreateData } from "../../../hooks/useMutations";
-import { useShowModal } from "@/store/showModal";
+import { useShowModal } from "@store";
 
 function AddTopicModal() {
   const closeModal = useShowModal((s) => s.closeModal);

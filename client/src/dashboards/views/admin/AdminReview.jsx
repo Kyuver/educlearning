@@ -1,7 +1,28 @@
+import { useUpdateData } from "@/hooks/useMutations";
+import { useShowModal } from "@/store";
 import { BookOpen, X, Check, XCircle, Calendar } from "lucide-react";
 import { createPortal } from "react-dom";
 
-export function TopicDetailsModal({ topic, onClose, onApprove, onReject }) {
+export function TopicDetailsModal({ topic, onClose }) {
+  const {closeModal} = useShowModal()
+  const updateTopic = useUpdateData(closeModal)
+
+  function approveTopic(topicId) {
+    updateTopic.mutate({
+      table: "topic",
+      id: Number(topicId),
+      data: {status: "APPROVED"}
+    })
+  }
+
+  function rejectTopic(topicId) {
+    updateTopic.mutate({
+      table: "topic",
+      id: Number(topicId),
+      data: {status: "DENIED"}
+    })
+  }
+
   if (!topic) return null;
 
   const paragraphs = (topic.content || "No explanation provided.")
@@ -51,17 +72,17 @@ export function TopicDetailsModal({ topic, onClose, onApprove, onReject }) {
 
           <div className="mt-auto pt-5 flex flex-col gap-2">
             <button
-              onClick={() => onApprove?.(topic.id)}
-              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors cursor-pointer shadow-sm shadow-emerald-500/20"
+              onClick={() => approveTopic(topic.id)}
+              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold bg-emerald-500 text-white hover:bg-emerald-600 active:bg-emerald-700 transition-colors cursor-pointer shadow-sm shadow-emerald-500/25"
             >
-              <Check size={16} />
+              <Check size={16} strokeWidth={2.5} />
               Approve
             </button>
             <button
-              onClick={() => onReject?.(topic.id)}
-              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+              onClick={() => rejectTopic(topic.id)}
+              className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold text-red-600 border border-red-200 hover:bg-red-50 hover:border-red-300 active:bg-red-100 transition-colors cursor-pointer"
             >
-              <XCircle size={16} />
+              <XCircle size={16} strokeWidth={2.5} />
               Reject
             </button>
           </div>

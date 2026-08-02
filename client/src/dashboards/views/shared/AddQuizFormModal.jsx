@@ -1,9 +1,13 @@
 import { ArrowLeft, X, CheckCircle2 } from "lucide-react";
 import { useShowModal } from "@/store";
+import { useGetIdByTopic } from "@/store/addQuiz";
 
 function AddQuizFormModal({ topic }) {
   const { closeModal } = useShowModal();
+  const { topicId } = useGetIdByTopic()
 
+  // onChange={(e) => setData({ ...data, title: e.target.value })}
+  console.log("topic id", topicId)
   return (
     <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/40 px-4">
       <div

@@ -21,7 +21,6 @@ function DashboardLayout({
     setView("dashboard");
     onSelectSubject(id);
   };
-
   return (
     <div className="flex min-h-screen bg-paper font-inter">
       <Sidebar

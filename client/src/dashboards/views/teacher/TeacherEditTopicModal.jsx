@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { ImagePlus } from "lucide-react";
 import { useSetData } from "../../../store/useData";
 import { uploadImage } from "../../../lib/api";
-import { useShowModal } from "@/store/showModal";
+import { useShowModal } from "@store";
 
 function TeacherEditTopicModal() {
   const { closeModal } = useShowModal()

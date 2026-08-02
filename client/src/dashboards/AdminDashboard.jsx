@@ -6,7 +6,6 @@ import AdminHomeView from "./views/admin/AdminHomeView";
 import AdminSubjectTopicsView from "./views/admin/AdminSubjectTopicsView";
 import AdminTopicDetailView from "./views/admin/AdminTopicDetailView";
 import AdminInviteTeacherModal from "./views/admin/AdminInviteTeacherModal";
-import AdminTopicReviewModal from "./views/admin/AdminTopicReviewModal";
 import AddTopicModal from "./views/shared/AddTopicModal";
 import ConfirmLogoutModal from "../compontents/ConfirmLogoutModal";
 
@@ -15,7 +14,7 @@ function AdminDashboard() {
   const [selectedTopic, setSelectedTopic] = useState(null);
   const { view, setView } = useView();
   const { modal, setModal, closeModal } = useShowModal();
-  const setSection = useSection((s) => s.setSection);
+  const { setSection } = useSection()
 
   useEffect(() => {
     setSection("default");
@@ -63,7 +62,6 @@ function AdminDashboard() {
       )}
       {view === "dashboard" && !selectedSubjectId && <AdminHomeView />}
       {modal === "AdminInviteTeacherModal" && <AdminInviteTeacherModal />}
-      {modal === "AdminTopicReviewModal" && <AdminTopicReviewModal />}
       {modal === "AdminAddTopicModal" && <AddTopicModal />}
       <ConfirmLogoutModal
         open={modal === "ConfirmLogoutModal"}
