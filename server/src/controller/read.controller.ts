@@ -61,9 +61,45 @@ export async function retrieveUnassignedTopics(req: any, res: any) {
   }
 }
 
+// topics filtered by status (without subject filter)
+export async function retrieveTopicsByStatus(req: any, res: any) {
+  const { status } = req.params
+  try {
+    const data = await prisma.topic.findMany({
+      where: {
+        isDeleted: false,
+        ...(status ? { status } : {}),
+      },
+      include: { subject: true, teacher: true },
+    })
+
+    return res.json({ status: 'success', msg: "successfully retrieved topics by status", data: data })
+  }
+  catch (e: any) {
+    console.log(e.message)
+    return res.status(500).json({ status: 'error', msg: e.message })
+  }
+}
+
+// quizzes of one topic, with their questions
+export async function retrieveTopicQuizzes(req: any, res: any) {
+  const { topicId } = req.params
+  try {
+    const data = await prisma.quiz.findMany({
+      where: { topicId: Number(topicId) },
+      include: { questions: true },
+    })
+
+    return res.json({ status: 'success', msg: "successfully retrieved quizzes", data: data })
+  }
+  catch (e: any) {
+    console.log(e.message)
+    return res.status(500).json({ status: 'error', msg: e.message })
+  }
+}
+
 // users base on role
-export async function retrieveUser(req: any, res: any) {
-  const { role } = req.params
+export async function retrieveUser(req: any, res: any) {  const { role } = req.params
   try {
     const data = await prisma.user.findMany({
       where: { role },

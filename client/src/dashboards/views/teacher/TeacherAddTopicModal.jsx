@@ -1,21 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { X, ChevronDown, Check, ImagePlus } from "lucide-react";
+import { X, ImagePlus } from "lucide-react";
 import { useSetData } from "../../../store/useData";
 import { fetchSubjects, uploadImage } from "../../../lib/api";
 import { useCreateData } from "../../../hooks/useMutations";
 import { useShowModal } from "@/store/showModal";
 
-function AddTopicModal() {
+function TeacherAddTopicModal() {
   const closeModal = useShowModal((s) => s.closeModal);
-  const subjectId = useShowModal((s) => s.modalData);
-  const [teacherOpen, setTeacherOpen] = useState(false);
+  const modalSubjectId = useShowModal((s) => s.modalData);
   const fileRef = useRef(null);
   const { data, setData } = useSetData();
   const [subjects, setSubjects] = useState([]);
-  const [params] = useSearchParams();
-  const role = params.get("role");
-  const status = role === "ADMIN" ? "APPROVED" : "PENDING";
+  const [subjectId, setSubjectId] = useState(modalSubjectId);
   const createTopic = useCreateData(closeModal);
 
   useEffect(() => {
@@ -38,6 +34,21 @@ function AddTopicModal() {
           </button>
         </div>
         <div className="px-6 py-5 space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-slate uppercase tracking-wide">Subject</label>
+            <select
+              value={subjectId ?? ""}
+              onChange={(e) => setSubjectId(e.target.value ? Number(e.target.value) : null)}
+              className="mt-1.5 w-full border border-[#ece7f5] rounded-lg px-4 py-3 text-sm bg-white outline-none focus:border-violet cursor-pointer"
+            >
+              <option value="">Select a subject</option>
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <div>
             <label className="text-xs font-semibold text-slate uppercase tracking-wide">Title</label>
             <input
@@ -98,51 +109,14 @@ function AddTopicModal() {
                       .replace(/<\/(p|div|li|h[1-6]|tr)>/gi, "\n")
                       .replace(/<[^>]+>/g, "")
                       .replace(/&nbsp;/g, " ")
-                      .replace(/&amp;/g, "&")
-                      .replace(/&lt;/g, "<")
-                      .replace(/&gt;/g, ">")
+                      .replace(/&/g, "&")
+                      .replace(/</g, "<")
+                      .replace(/>/g, ">")
                   : e.clipboardData.getData("text/plain");
                 text = text.replace(/\n{3,}/g, "\n\n").trim();
                 setData({ ...data, content: text });
               }}
             />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate uppercase tracking-wide">Assign to teacher</label>
-            <div className="relative mt-1.5">
-              <button
-                type="button"
-                onClick={() => setTeacherOpen(!teacherOpen)}
-                className="w-full flex items-center justify-between gap-2 border border-[#ece7f5] rounded-lg px-4 py-3 text-sm bg-white outline-none focus:border-violet cursor-pointer"
-              >
-                <span className="text-slate">No teacher assigned</span>
-                <ChevronDown size={16} className="text-slate" />
-              </button>
-              {teacherOpen && (
-              <div className="absolute z-10 top-full mt-2 w-full bg-white border border-[#ece7f5] rounded-lg shadow-lg shadow-[#2a2049]/10 max-h-40 overflow-y-auto">
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-between px-4 py-2 text-sm text-slate hover:bg-[#faf8ff] cursor-pointer"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full border border-[#ece7f5] flex items-center justify-center text-[10px] text-slate">—</span>
-                    No teacher
-                  </span>
-                  <Check size={15} className="text-violet" />
-                </button>
-                <div className="border-t border-[#ece7f5]" />
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-between px-4 py-2 text-sm text-ink hover:bg-[#faf8ff] cursor-pointer"
-                >
-                  <span className="flex items-center gap-2">
-                    <img src="https://i.pravatar.cc/80?img=32" alt="Teacher" className="w-5 h-5 rounded-full object-cover" />
-                    Teacher Name
-                  </span>
-                </button>
-              </div>
-              )}
-            </div>
           </div>
         </div>
         <div className="flex justify-end gap-2 px-6 py-4 border-t border-[#ece7f5]">
@@ -150,7 +124,7 @@ function AddTopicModal() {
             Cancel
           </button>
           <button
-            onClick={() => createTopic.mutate({ table: "topic", data: { ...data, status, subjectId } })}
+            onClick={() => createTopic.mutate({ table: "topic", data: { ...data, status: "PENDING", subjectId } })}
             className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet text-white hover:opacity-90 cursor-pointer"
           >
             Add Topic
@@ -161,4 +135,4 @@ function AddTopicModal() {
   );
 }
 
-export default AddTopicModal;
+export default TeacherAddTopicModal;

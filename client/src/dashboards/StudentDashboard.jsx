@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Home, User } from "lucide-react";
 import DashboardLayout from "./DashboardLayout";
-import { useView } from "../store/useComponent";
+import { useView } from "@store";
+import { useQuery } from "@tanstack/react-query";
+import { fetchSubjects } from "../lib/api";
 import StudentProfileView from "./views/student/StudentProfileView";
 import StudentHomeView from "./views/student/StudentHomeView";
 import StudentSubjectTopicsView from "./views/student/StudentSubjectTopicsView";
@@ -11,11 +13,15 @@ import StudentQuizResultView from "./views/student/StudentQuizResultView";
 
 function StudentDashboard() {
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
-  const [selectedTopicId, setSelectedTopicId] = useState(null);
+  const [selectedTopic, setSelectedTopic] = useState(null);
   const [takingQuiz, setTakingQuiz] = useState(false);
   const [score, setScore] = useState(null);
-  const view = useView((s) => s.view);
-  const setView = useView((s) => s.setView);
+  const { view, setView } = useView();
+
+  const { data: subjects = [] } = useQuery({
+    queryKey: ["subjects"],
+    queryFn: fetchSubjects,
+  });
 
   const topItem = (
     <>
@@ -29,7 +35,7 @@ function StudentDashboard() {
         onClick={() => {
           setView("dashboard");
           setSelectedSubjectId(null);
-          setSelectedTopicId(null);
+          setSelectedTopic(null);
           setTakingQuiz(false);
           setScore(null);
         }}
@@ -43,7 +49,13 @@ function StudentDashboard() {
             ? "bg-white/14 text-white border-gold"
             : "text-white/85 border-transparent hover:bg-white/6")
         }
-        onClick={() => setView("profile")}
+        onClick={() => {
+          setView("profile");
+          setSelectedSubjectId(null);
+          setSelectedTopic(null);
+          setTakingQuiz(false);
+          setScore(null);
+        }}
       >
         <User size={16} /> Profile
       </div>
@@ -52,25 +64,45 @@ function StudentDashboard() {
 
   return (
     <DashboardLayout
-      subjects={[]}
+      subjects={subjects}
       selectedSubjectId={selectedSubjectId}
-      onSelectSubject={setSelectedSubjectId}
+      onSelectSubject={(id) => {
+        setSelectedTopic(null);
+        setTakingQuiz(false);
+        setScore(null);
+        setSelectedSubjectId(id);
+      }}
       topItem={topItem}
       onLogout={() => (window.location.href = "/")}
     >
       {view === "profile" && <StudentProfileView />}
       {view === "dashboard" && !selectedSubjectId && <StudentHomeView />}
-      {view === "dashboard" && selectedSubjectId && !selectedTopicId && (
-        <StudentSubjectTopicsView />
+      {view === "dashboard" && selectedSubjectId && !selectedTopic && (
+        <StudentSubjectTopicsView
+          selectedSubjectId={selectedSubjectId}
+          onTopicClick={setSelectedTopic}
+        />
       )}
-      {view === "dashboard" && selectedTopicId && !takingQuiz && (
-        <StudentTopicDetailView />
+      {view === "dashboard" && selectedTopic && !takingQuiz && (
+        <StudentTopicDetailView
+          topic={selectedTopic}
+          onBack={() => setSelectedTopic(null)}
+          onTakeQuiz={() => setTakingQuiz(true)}
+        />
       )}
-      {view === "dashboard" && selectedTopicId && takingQuiz && score === null && (
-        <StudentQuizView />
+      {view === "dashboard" && selectedTopic && takingQuiz && score === null && (
+        <StudentQuizView
+          onBack={() => setTakingQuiz(false)}
+          onSubmit={() => setScore(0)}
+        />
       )}
-      {view === "dashboard" && selectedTopicId && takingQuiz && score !== null && (
-        <StudentQuizResultView />
+      {view === "dashboard" && selectedTopic && takingQuiz && score !== null && (
+        <StudentQuizResultView
+          onBack={() => {
+            setTakingQuiz(false);
+            setScore(null);
+          }}
+        />
       )}
     </DashboardLayout>
   );

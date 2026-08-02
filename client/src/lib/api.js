@@ -53,6 +53,11 @@ export async function fetchTopics(status) {
   return res.data;
 }
 
+export async function fetchTopicQuizzes(topicId) {
+  const res = await api.get(`/api/topic/${topicId}/quizzes`);
+  return res.data;
+}
+
 // ----- users / notifications -----
 
 export async function fetchUsers(role) {

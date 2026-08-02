@@ -1,9 +1,12 @@
 import { ArrowLeft } from "lucide-react";
 
-function StudentQuizView() {
+function StudentQuizView({ onBack, onSubmit }) {
   return (
     <div className="bg-white rounded-md border border-[#ece7f5] p-6">
-      <button className="flex items-center gap-2 text-slate hover:text-ink text-sm mb-4 cursor-pointer">
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 text-slate hover:text-ink text-sm mb-4 cursor-pointer"
+      >
         <ArrowLeft size={16} /> Back to lesson
       </button>
       <h2 className="font-sora font-semibold text-lg text-ink mb-4">Topic quiz</h2>
@@ -22,7 +25,10 @@ function StudentQuizView() {
           <span className="text-sm text-ink">Choice C</span>
         </label>
       </div>
-      <button className="px-5 py-2.5 rounded-lg bg-violet text-white text-sm font-semibold hover:opacity-90 cursor-pointer">
+      <button
+        onClick={onSubmit}
+        className="px-5 py-2.5 rounded-lg bg-violet text-white text-sm font-semibold hover:opacity-90 cursor-pointer"
+      >
         Submit quiz
       </button>
     </div>

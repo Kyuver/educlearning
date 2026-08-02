@@ -17,18 +17,3 @@ export const useShowModal = create((set) => ({
   setModal: (modal, data = null) => set({ modal, modalData: data }),
   closeModal: () => set({ modal: null, modalData: null }),
 }));
-
-export const useNotification = create((set) => ({
-  notification: false,
-  setNotification: (notification) => set({ notification }),
-}));
-
-export const useSection = create((set) => ({
-  section: "approved",
-  setSection: (section) => set({ section }),
-}));
-
-export const useView = create((set) => ({
-  view: "dashboard",
-  setView: (view) => set({ view }),
-}));

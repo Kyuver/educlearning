@@ -1,26 +1,79 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Bell, Plus, Mail } from "lucide-react";
-import { useNotification, useSection, useShowModal, MODAL } from "../../../store/useComponent";
-import { fetchUserNotifications } from "../../../lib/api";
+import { Bell, Plus, Mail, BookOpen } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
-function TeacherSubjectsView() {
-  const notification = useNotification((s) => s.notification);
-  const setNotification = useNotification((s) => s.setNotification);
-  const section = useSection((s) => s.section);
-  const setSection = useSection((s) => s.setSection);
-  const setModal = useShowModal((s) => s.setModal);
+import { fetchUserNotifications, fetchTopics, fetchSubjectTopics } from "../../../lib/api";
+import { MODAL, useNotification, useSection } from "@/store";
+import { useShowModal } from "@/store/showModal";
+
+function TopicCard({ topic, onClick }) {
+  return (
+    <div
+      key={topic.id}
+      className="bg-white rounded-md border border-[#ece7f5] overflow-hidden hover:border-violet/30 hover:shadow-md transition-all cursor-pointer"
+      onClick={onClick}
+    >
+      {topic.coverImage ? (
+        <img
+          src={topic.coverImage}
+          alt={topic.title}
+          className="w-full h-45 object-cover"
+        />
+      ) : (
+        <div className="w-full h-45 bg-paper flex items-center justify-center border-b border-[#ece7f5]">
+          <BookOpen size={32} className="text-slate/40" />
+        </div>
+      )}
+
+      <div className="p-4 h-45 flex flex-col">
+        <div className="flex items-center justify-between gap-2">
+          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-violet/10 text-violet truncate">
+            {topic.subject?.name ?? "General"}
+          </span>
+          <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium capitalize ${topic.status === "approved" ? "bg-emerald-50 text-emerald-600" : topic.status === "denied" ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"}`}>
+            {topic.status}
+          </span>
+        </div>
+
+        <h3 className="font-sora font-semibold text-base text-ink mt-3 truncate">
+          {topic.title}
+        </h3>
+
+        <div className="flex items-center gap-2 mt-3">
+          <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 text-xs font-semibold">
+            {(topic.teacher?.name ?? topic.teacherName ?? "?")[0]?.toUpperCase()}
+          </div>
+          <p className="text-md text-slate truncate">
+            {topic.teacher?.name ?? topic.teacherName ?? "Unknown"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TeacherSubjectsView({ selectedSubjectId, onTopicClick }) {
+  const { notification, notifications, unread, setNotification, setNotifications } = useNotification();
+  const {section, setSection} = useSection()
+  const { setModal } = useShowModal();
+
   const [params] = useSearchParams();
   const teacherId = Number(params.get("id") ?? 0);
-  const [notifications, setNotifications] = useState([]);
+
+  const { data: topics = [], isLoading } = useQuery({
+    queryKey: ["topics", section, selectedSubjectId],
+    queryFn: () => selectedSubjectId
+      ? fetchSubjectTopics(selectedSubjectId, "APPROVED")
+      : fetchTopics(section.toUpperCase()),
+    enabled: !!teacherId,
+  });
 
   useEffect(() => {
     if (teacherId) {
       fetchUserNotifications(teacherId).then(setNotifications);
     }
-  }, [teacherId]);
-
-  const unread = notifications.filter((n) => n.status === "UNREAD").length;
+  }, [teacherId, setNotifications]);
 
   return (
     <div className="space-y-6">
@@ -29,13 +82,15 @@ function TeacherSubjectsView() {
           <span className="text-slate">Section:</span> Grade 7 - St. Peter
         </span>
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setModal(MODAL.TEACHER_ADD_TOPIC)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet text-white text-sm font-semibold hover:opacity-90 cursor-pointer"
-          >
-            <Plus size={17} /> Add Topic
-          </button>
+          {selectedSubjectId && (
+            <button
+              type="button"
+              onClick={() => setModal(MODAL.TEACHER_ADD_TOPIC, selectedSubjectId)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet text-white text-sm font-semibold hover:opacity-90 cursor-pointer"
+            >
+              <Plus size={17} /> Add Topic
+            </button>
+          )}
           <div className="relative z-50">
             <button
               onClick={() => setNotification(!notification)}
@@ -99,20 +154,34 @@ function TeacherSubjectsView() {
           </div>
         </div>
       </div>
-      <div className="flex gap-6 border-b border-[#ece7f5]">
-        {["approved", "pending", "denied"].map((st) => (
-          <button
-            key={st}
-            onClick={() => setSection(st)}
-            className={`pb-2 text-sm font-semibold capitalize cursor-pointer relative transition-colors ${section === st ? "text-ink" : "text-slate hover:text-ink"}`}
-          >
-            {st}
-            {section === st && <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-violet rounded-full" />}
-          </button>
-        ))}
-      </div>
-      <div className="grid grid-cols-4 gap-4">
-        <p className="text-sm text-slate col-span-4 py-10 text-center">No {section} topics yet.</p>
+      {!selectedSubjectId && (
+        <div className="flex gap-6 border-b border-[#ece7f5]">
+          {["approved", "pending", "denied"].map((st) => (
+            <button
+              key={st}
+              onClick={() => setSection(st)}
+              className={`pb-2 text-sm font-semibold capitalize cursor-pointer relative transition-colors ${section === st ? "text-ink" : "text-slate hover:text-ink"}`}
+            >
+              {st}
+              {section === st && <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-violet rounded-full" />}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 min-h-[300px]">
+        {isLoading ? (
+          <div className="col-span-full flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-4 border-violet border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : topics.length === 0 ? (
+          <p className="text-sm text-slate col-span-full py-10 text-center min-h-[300px] flex items-center justify-center">
+            No {selectedSubjectId ? "approved" : section} topics yet.
+          </p>
+        ) : (
+          topics.map((topic) => <TopicCard key={topic.id} topic={topic} onClick={() => {
+            onTopicClick?.(topic)
+          }} />)
+        )}
       </div>
     </div>
   );

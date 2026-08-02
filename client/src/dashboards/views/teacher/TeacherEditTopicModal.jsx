@@ -1,11 +1,12 @@
 import { useRef } from "react";
 import { ImagePlus } from "lucide-react";
-import { useShowModal } from "../../../store/useComponent";
 import { useSetData } from "../../../store/useData";
 import { uploadImage } from "../../../lib/api";
+import { useShowModal } from "@/store/showModal";
 
 function TeacherEditTopicModal() {
-  const closeModal = useShowModal((s) => s.closeModal);
+  const { closeModal } = useShowModal()
+
   const fileRef = useRef(null);
   const { data, setData } = useSetData()
 

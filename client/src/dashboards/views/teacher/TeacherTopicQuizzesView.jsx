@@ -1,24 +1,33 @@
+import { useView, useShowModal } from "@store";
 import { ArrowLeft, Plus } from "lucide-react";
-import { useShowModal, MODAL } from "../../../store/useComponent";
 
-function TeacherTopicQuizzesView() {
-  const setModal = useShowModal((s) => s.setModal);
+function TeacherTopicQuizzesView({ topic, onBack }) {
+  const { setView } = useView();
+  const { setModal } = useShowModal();
+
+  const handleBack = () => {
+    if (onBack) onBack();
+    setView("dashboard");
+  }
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button className="text-slate hover:text-ink cursor-pointer">
+          <button
+            className="cursor-pointer"
+            onClick={handleBack}
+          >
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h4 className="text-lg font-sora font-semibold text-ink">Topic Title</h4>
+            <h4 className="text-lg font-sora font-semibold text-ink">{topic?.title ?? "Topic"}</h4>
             <p className="text-sm text-slate">All quizzes for this topic</p>
           </div>
         </div>
         <button
           type="button"
-          onClick={() => setModal(MODAL.ADD_QUIZ)}
+          onClick={() => setModal("AddQuizFormModal")}
           className="flex items-center gap-2 px-6 py-3 rounded-xl bg-violet text-white text-sm font-semibold hover:opacity-90 cursor-pointer shrink-0"
         >
           <Plus size={18} /> Add Quiz

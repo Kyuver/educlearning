@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { X, ChevronDown, Check, Send, Loader2 } from "lucide-react";
-import { useShowModal } from "../../../store/useComponent";
 import { fetchUsers, fetchUnassignedTopics } from "../../../lib/api";
 import { useSendInvitation } from "../../../hooks/useMutations";
+import { useShowModal } from "@/store/showModal";
 
 const subjectGradients = [
   "from-violet to-purple-400",
@@ -16,7 +16,7 @@ const subjectGradients = [
 
 function AdminInviteTeacherModal() {
   "use no memo";
-  const closeModal = useShowModal((s) => s.closeModal);
+  const {closeModal} = useShowModal()
   const [params] = useSearchParams();
   const adminId = Number(params.get("id") ?? 0);
 

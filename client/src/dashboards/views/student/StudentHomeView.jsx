@@ -1,9 +1,8 @@
+import { useNotification } from "@/store";
 import { Bell, CheckCircle2, Megaphone } from "lucide-react";
-import { useNotification } from "../../../store/useComponent";
 
 function StudentHomeView() {
-  const notification = useNotification((s) => s.notification);
-  const setNotification = useNotification((s) => s.setNotification);
+  const {notification, setNotification} = useNotification()
 
   return (
     <div className="space-y-6">

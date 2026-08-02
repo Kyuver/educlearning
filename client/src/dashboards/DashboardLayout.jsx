@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchSubjects } from "../lib/api";
 import Sidebar from "./Sidebar";
+import { useView } from "@/store";
 
 function DashboardLayout({
   selectedSubjectId,
@@ -14,17 +15,28 @@ function DashboardLayout({
     queryFn: fetchSubjects,
   });
 
+  const { setView } = useView();
+
+  const handleSelectSubject = (id) => {
+    setView("dashboard");
+    onSelectSubject(id);
+  };
+
   return (
     <div className="flex min-h-screen bg-paper font-inter">
       <Sidebar
         subjects={subjects}
         selectedSubjectId={selectedSubjectId}
-        onSelectSubject={onSelectSubject}
+        onSelectSubject={handleSelectSubject}
         topItem={topItem}
         onLogout={onLogout}
       />
-      <main className="flex-1 p-10 px-12 flex flex-col">{children}</main>
+      <main className="flex-1 p-10 px-12 flex flex-col relative" id="main-content">
+        {children}
+        <div id="modal-root" />
+      </main>
     </div>
   );
 }
+
 export default DashboardLayout;

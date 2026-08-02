@@ -1,11 +1,11 @@
 import { ArrowLeft, X, CheckCircle2 } from "lucide-react";
-import { useShowModal } from "../../../store/useComponent";
+import { useShowModal } from "@/store";
 
-function AddQuizFormModal() {
-  const closeModal = useShowModal((s) => s.closeModal);
+function AddQuizFormModal({ topic }) {
+  const { closeModal } = useShowModal();
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4">
+    <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/40 px-4">
       <div
         className="bg-white rounded-xl w-full max-w-4xl shadow-xl flex flex-col overflow-hidden"
         style={{ height: "80vh" }}
@@ -15,7 +15,7 @@ function AddQuizFormModal() {
             <button onClick={closeModal} className="text-slate hover:text-ink cursor-pointer">
               <ArrowLeft size={20} />
             </button>
-            <h3 className="font-semibold text-ink text-base">Add Quiz — Topic Title</h3>
+            <h3 className="font-semibold text-ink text-base">Add Quiz — {topic?.title ?? "Topic"}</h3>
           </div>
           <button onClick={closeModal} className="text-slate hover:text-ink cursor-pointer">
             <X size={20} />

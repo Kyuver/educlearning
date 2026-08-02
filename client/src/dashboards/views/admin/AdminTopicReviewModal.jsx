@@ -1,8 +1,9 @@
+import { useShowModal } from "@/store/showModal";
 import { X } from "lucide-react";
-import { useShowModal } from "../../../store/useComponent";
 
 function AdminTopicReviewModal() {
-  const closeModal = useShowModal((s) => s.closeModal);
+
+  const { closeModal } = useShowModal()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">

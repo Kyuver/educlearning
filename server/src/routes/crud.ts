@@ -1,5 +1,5 @@
 import express from 'express'
-import { retrieveSubjectTopics, retrieveUser, retrieveDataById, retrieveAll, retrieveUnassignedTopics } from '../controller/read.controller'
+import { retrieveSubjectTopics, retrieveUser, retrieveDataById, retrieveAll, retrieveUnassignedTopics, retrieveTopicsByStatus, retrieveTopicQuizzes } from '../controller/read.controller'
 import { upload } from '../middleware/upload'
 import { create,  } from '../controller/create.controller'
 import { update } from '../controller/update.controller'
@@ -21,6 +21,12 @@ crud.get('/api/user/:role', retrieveUser)
 
 // route for topics without an assigned teacher
 crud.get('/api/topic/unassigned', retrieveUnassignedTopics)
+
+// route for topics by status
+crud.get('/api/topic/:status', retrieveTopicsByStatus)
+
+// route for quizzes of a topic
+crud.get('/api/topic/:topicId/quizzes', retrieveTopicQuizzes)
 
 // route for notifications
 crud.get('/api/notification', getNotification)

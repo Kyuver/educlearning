@@ -1,8 +1,8 @@
+import { useShowModal } from "@/store/showModal";
 import { AlertTriangle } from "lucide-react";
-import { useShowModal } from "../../../store/useComponent";
 
 function TeacherDeleteTopicModal() {
-  const closeModal = useShowModal((s) => s.closeModal);
+  const { closeModal } = useShowModal()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">

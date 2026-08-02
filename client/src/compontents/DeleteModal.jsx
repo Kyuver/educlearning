@@ -12,7 +12,7 @@ function ConfirmDeleteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="bg-white rounded-2xl w-full max-w-sm p-8 flex flex-col items-center text-center shadow-xl">
+      <div className="bg-white rounded-xl w-full max-w-sm p-8 flex flex-col items-center text-center shadow-xl">
         {/* Warning icon */}
         <div className="w-14 h-14 rounded-full bg-red-500 flex items-center justify-center mb-5">
           <AlertTriangle size={26} className="text-white" fill="white" strokeWidth={0} />
