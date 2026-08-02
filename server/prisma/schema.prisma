@@ -114,6 +114,7 @@ model Topic {
   subject  Subject @relation(fields: [subjectId], references: [id])
   teacher  User?   @relation("AssignedTopicTeacher", fields: [teacherId], references: [id])
   quizzes  Quiz[]
+  invitations Invitation[]
 }
 
 model Quiz {
@@ -159,10 +160,12 @@ model Invitation {
   status       InviteStatus @default(PENDING)
   sentById     Int
   receivedById Int
+  topicId      Int
   createdAt    DateTime     @default(now())
 
-  sentBy   User @relation("InviteSentBy", fields: [sentById], references: [id])
-  received User @relation("InviteReceivedBy", fields: [receivedById], references: [id])
+  sentBy   User  @relation("InviteSentBy", fields: [sentById], references: [id])
+  received User  @relation("InviteReceivedBy", fields: [receivedById], references: [id])
+  topic    Topic @relation(fields: [topicId], references: [id])
 }
 
 model Notification {

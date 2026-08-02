@@ -76,12 +76,18 @@ function AdminSubjectTopicsView({ selectedSubjectId, onTopicClick }) {
                 </h3>
 
                 <div className="flex items-center gap-2 mt-3">
-                  <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 text-xs font-semibold">
-                    {(topic.teacher?.name ?? topic.teacherName ?? "?")[0]?.toUpperCase()}
-                  </div>
-                  <p className="text-sm text-slate font-medium truncate">
-                    {topic.teacher?.name ?? topic.teacherName ?? "Unknown"}
-                  </p>
+                  {topic.teacher ? (
+                    <>
+                      <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 text-xs font-semibold">
+                        {topic.teacher.name[0]?.toUpperCase()}
+                      </div>
+                      <p className="text-sm text-slate font-medium truncate">
+                        Handled by {topic.teacher.name}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-slate/60 italic truncate">Unassigned</p>
+                  )}
                 </div>
               </div>
             </div>

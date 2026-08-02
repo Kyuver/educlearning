@@ -62,9 +62,9 @@ function StudentSubjectTopicsView({ selectedSubjectId, onTopicClick }) {
                   <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-violet/10 text-violet truncate">
                     {topic.subject?.name ?? "General"}
                   </span>
-                  <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600">
+                  {/* <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600">
                     Approved
-                  </span>
+                  </span>*/}
                 </div>
 
                 <h3 className="font-sora font-semibold text-base text-ink mt-3 truncate">

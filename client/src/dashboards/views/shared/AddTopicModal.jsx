@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { X, ChevronDown, Check, ImagePlus } from "lucide-react";
 import { useSetData } from "../../../store/useData";
-import { fetchSubjects, uploadImage } from "../../../lib/api";
+import { fetchSubjects, fetchUsers, uploadImage } from "../../../lib/api";
 import { useCreateData } from "../../../hooks/useMutations";
 import { useShowModal } from "@store";
 
@@ -10,9 +10,11 @@ function AddTopicModal() {
   const closeModal = useShowModal((s) => s.closeModal);
   const subjectId = useShowModal((s) => s.modalData);
   const [teacherOpen, setTeacherOpen] = useState(false);
+  const [teacherId, setTeacherId] = useState("");
   const fileRef = useRef(null);
   const { data, setData } = useSetData();
   const [subjects, setSubjects] = useState([]);
+  const [teachers, setTeachers] = useState([]);
   const [params] = useSearchParams();
   const role = params.get("role");
   const status = role === "ADMIN" ? "APPROVED" : "PENDING";
@@ -20,10 +22,12 @@ function AddTopicModal() {
 
   useEffect(() => {
     fetchSubjects().then(setSubjects);
+    fetchUsers("TEACHER").then((teachers) => setTeachers(teachers.filter((t) => t.role === "TEACHER")));
   }, []);
 
   const subject = subjects.find((s) => s.id === subjectId);
   const subjectName = subject?.name ?? "Subject Name";
+  const selectedTeacher = teachers.find((t) => String(t.id) === teacherId);
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4">
@@ -115,32 +119,67 @@ function AddTopicModal() {
                 onClick={() => setTeacherOpen(!teacherOpen)}
                 className="w-full flex items-center justify-between gap-2 border border-[#ece7f5] rounded-lg px-4 py-3 text-sm bg-white outline-none focus:border-violet cursor-pointer"
               >
-                <span className="text-slate">No teacher assigned</span>
-                <ChevronDown size={16} className="text-slate" />
+                {selectedTeacher ? (
+                  <span className="flex items-center gap-2 truncate">
+                    {selectedTeacher.avatar ? (
+                      <img src={selectedTeacher.avatar} alt={selectedTeacher.name} className="w-6 h-6 rounded-full object-cover shrink-0" />
+                    ) : (
+                      <span className="w-6 h-6 rounded-full bg-violet/10 text-violet text-xs font-semibold flex items-center justify-center shrink-0">
+                        {selectedTeacher.name?.[0]?.toUpperCase() ?? "?"}
+                      </span>
+                    )}
+                    <span className="text-ink truncate">{selectedTeacher.name}</span>
+                  </span>
+                ) : (
+                  <span className="text-slate">No teacher assigned</span>
+                )}
+                <ChevronDown size={16} className="text-slate shrink-0" />
               </button>
               {teacherOpen && (
-              <div className="absolute z-10 top-full mt-2 w-full bg-white border border-[#ece7f5] rounded-lg shadow-lg shadow-[#2a2049]/10 max-h-40 overflow-y-auto">
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-between px-4 py-2 text-sm text-slate hover:bg-[#faf8ff] cursor-pointer"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full border border-[#ece7f5] flex items-center justify-center text-[10px] text-slate">—</span>
-                    No teacher
-                  </span>
-                  <Check size={15} className="text-violet" />
-                </button>
-                <div className="border-t border-[#ece7f5]" />
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-between px-4 py-2 text-sm text-ink hover:bg-[#faf8ff] cursor-pointer"
-                >
-                  <span className="flex items-center gap-2">
-                    <img src="https://i.pravatar.cc/80?img=32" alt="Teacher" className="w-5 h-5 rounded-full object-cover" />
-                    Teacher Name
-                  </span>
-                </button>
-              </div>
+                <div className="absolute z-10 top-full mt-2 w-full bg-white border border-[#ece7f5] rounded-lg shadow-lg shadow-[#2a2049]/10 max-h-40 overflow-y-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTeacherId("");
+                      setTeacherOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-2 text-sm hover:bg-[#faf8ff] cursor-pointer ${!teacherId ? "text-ink" : "text-slate"}`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full border border-[#ece7f5] flex items-center justify-center text-[10px] text-slate">—</span>
+                      No teacher
+                    </span>
+                    {!teacherId && <Check size={15} className="text-violet" />}
+                  </button>
+                  <div className="border-t border-[#ece7f5]" />
+                  {teachers.length === 0 ? (
+                    <p className="px-4 py-2 text-sm text-slate/70">No teachers yet</p>
+                  ) : (
+                    teachers.map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => {
+                          setTeacherId(String(t.id));
+                          setTeacherOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-4 py-2 text-sm hover:bg-[#faf8ff] cursor-pointer ${teacherId === String(t.id) ? "text-ink" : "text-slate"}`}
+                      >
+                        <span className="flex items-center gap-2 truncate">
+                          {t.avatar ? (
+                            <img src={t.avatar} alt={t.name} className="w-5 h-5 rounded-full object-cover shrink-0" />
+                          ) : (
+                            <span className="w-5 h-5 rounded-full bg-violet/10 text-violet text-[10px] font-semibold flex items-center justify-center shrink-0">
+                              {t.name?.[0]?.toUpperCase() ?? "?"}
+                            </span>
+                          )}
+                          <span className="truncate">{t.name}</span>
+                        </span>
+                        {teacherId === String(t.id) && <Check size={15} className="text-violet shrink-0" />}
+                      </button>
+                    ))
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -150,7 +189,12 @@ function AddTopicModal() {
             Cancel
           </button>
           <button
-            onClick={() => createTopic.mutate({ table: "topic", data: { ...data, status, subjectId } })}
+            onClick={() =>
+              createTopic.mutate({
+                table: "topic",
+                data: { ...data, status, subjectId, teacherId: teacherId ? Number(teacherId) : null },
+              })
+            }
             className="px-4 py-2 rounded-lg text-sm font-semibold bg-violet text-white hover:opacity-90 cursor-pointer"
           >
             Add Topic

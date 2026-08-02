@@ -90,6 +90,31 @@ export async function fetchUserNotifications(userId) {
   return res.data;
 }
 
+export async function markNotificationsRead(userId) {
+  const res = await api.post(`/api/notification/read/${userId}`);
+  return res.data;
+}
+
+export async function fetchUserInvitations(userId) {
+  const res = await api.get(`/api/invitation/user/${userId}`);
+  return res.data;
+}
+
+export async function fetchSentInvitations(userId) {
+  const res = await api.get(`/api/invitation/sent/${userId}`);
+  return res.data;
+}
+
+export async function acceptInvitation(id) {
+  const res = await api.post(`/api/invitation/${id}/accept`);
+  return res.data;
+}
+
+export async function declineInvitation(id) {
+  const res = await api.post(`/api/invitation/${id}/decline`);
+  return res.data;
+}
+
 // ----- writes -----
 
 export async function uploadImage(file) {

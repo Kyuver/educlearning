@@ -11,5 +11,5 @@ export const topicSchema = z.object({
   coverImage: z.string().optional(),
   status: status,
   subjectId: z.number().int().min(1, 'subject id required.'),
-  teacherId: z.number().int().optional()
+  teacherId: z.number().int().optional().nullable()
 })

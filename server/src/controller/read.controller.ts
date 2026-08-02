@@ -32,6 +32,7 @@ export async function retrieveSubjectTopics(req: any, res: any) {
         isDeleted: false,
         ...(status ? { status } : {}),
       },
+      include: { subject: true, teacher: true },
     })
 
     return res.json({ status: 'success', msg: "successfully retrieved topics", data: data })

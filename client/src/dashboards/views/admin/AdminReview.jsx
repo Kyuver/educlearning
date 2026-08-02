@@ -1,11 +1,9 @@
 import { useUpdateData } from "@/hooks/useMutations";
-import { useShowModal } from "@/store";
 import { BookOpen, X, Check, XCircle, Calendar } from "lucide-react";
 import { createPortal } from "react-dom";
 
 export function TopicDetailsModal({ topic, onClose }) {
-  const {closeModal} = useShowModal()
-  const updateTopic = useUpdateData(closeModal)
+  const updateTopic = useUpdateData(onClose)
 
   function approveTopic(topicId) {
     updateTopic.mutate({

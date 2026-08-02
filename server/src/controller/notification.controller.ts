@@ -40,6 +40,22 @@ export async function getNotificationUserById(req: any, res: any, next: any) {
   }
 }
 
+export async function markNotificationsRead(req: any, res: any, next: any) {
+  try {
+    const { userId } = req.params
+
+    const result = await prisma.notification.updateMany({
+      where: { receiverId: Number(userId), status: 'UNREAD' },
+      data: { status: 'READ' },
+    })
+
+    return res.json({ status: 'success', msg: 'notifications marked as read', data: { count: result.count } })
+  }
+  catch (e: any) {
+    next(e)
+  }
+}
+
 export async function sendNotification(req: any, res: any, next: any) {
   try {
     const { type, title, message, senderId, receiverId } = req.body

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { create, update, softDelete, restore, sendNotification } from "../lib/api";
+import { create, update, softDelete, restore, sendNotification, acceptInvitation, declineInvitation } from "../lib/api";
 import toast from "react-hot-toast";
 
 function notifySuccess(result) {
@@ -41,11 +41,31 @@ export function useRestoreData(onSuccess) {
   return useCrudMutation(({ table, id }) => restore(table, id), onSuccess);
 }
 
+export function useRespondInvitation(onSuccess) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, action }) =>
+      action === "accept" ? acceptInvitation(id) : declineInvitation(id),
+    onSuccess: (result) => {
+      notifySuccess(result);
+      qc.invalidateQueries();
+      onSuccess?.();
+    },
+    onError: notifyError,
+  });
+}
+
 export function useSendInvitation(onSuccess) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ data }) => {
-      await create("invitation", data);
+      const invitation = await create("invitation", {
+        courseName: data.courseName,
+        status: "PENDING",
+        sentById: data.sentById,
+        receivedById: data.receivedById,
+        topicId: data.topicId,
+      });
       await sendNotification({
         type: "INVITATION",
         title: "Course invitation",
@@ -54,7 +74,7 @@ export function useSendInvitation(onSuccess) {
         senderId: data.sentById,
         receiverId: data.receivedById,
       });
-      return update("topic", data.topicId, { teacherId: data.receivedById });
+      return invitation;
     },
     onSuccess: (result) => {
       notifySuccess(result);

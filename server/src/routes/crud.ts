@@ -4,7 +4,8 @@ import { upload } from '../middleware/upload'
 import { create,  } from '../controller/create.controller'
 import { update } from '../controller/update.controller'
 import { softDeleteById, restoreById } from '../controller/softDelete.controller'
-import { getNotification, getNotificationUserById, sendNotification } from '../controller/notification.controller'
+import { getNotification, getNotificationUserById, sendNotification, markNotificationsRead } from '../controller/notification.controller'
+import { retrieveInvitationsByUser, retrieveInvitationsSent, acceptInvitation, declineInvitation } from '../controller/invitation.controller'
 import { inputSanitizer } from '../middleware/inputSanitizer'
 
 const crud = express.Router()
@@ -38,7 +39,14 @@ crud.get('/api/user/:userId/quiz-attempts', retrieveUserQuizAttempts)
 crud.get('/api/notification', getNotification)
 crud.get('/api/notification/:status', getNotification)
 crud.get('/api/notification/user/:id', getNotificationUserById)
+crud.post('/api/notification/read/:userId', markNotificationsRead)
 crud.post('/api/notification', sendNotification)
+
+// route for invitations
+crud.get('/api/invitation/user/:userId', retrieveInvitationsByUser)
+crud.get('/api/invitation/sent/:userId', retrieveInvitationsSent)
+crud.post('/api/invitation/:id/accept', acceptInvitation)
+crud.post('/api/invitation/:id/decline', declineInvitation)
 
 // route for uploading an image
 crud.post('/api/upload', upload.single('image'), (req: any, res: any) => {

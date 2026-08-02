@@ -3,9 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { useSetData } from "../../../store/useData";
 import { useCreateData } from "../../../hooks/useMutations";
-import { fetchSubjects, fetchUsers, get } from "../../../lib/api";
+import { fetchSubjects, fetchUsers, get, fetchSentInvitations } from "../../../lib/api";
 import { useMemo } from "react";
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { TopicDetailsModal } from "./AdminReview";
 import { MODAL, useShowModal } from "@store";
 import { useSection } from "@/store";
@@ -37,6 +38,15 @@ function AdminHomeView() {
   const { data: teachers = [] } = useQuery({
     queryKey: ["teachers"],
     queryFn: () => fetchUsers("TEACHER"),
+  });
+
+  const [params] = useSearchParams();
+  const adminId = params.get("id");
+
+  const { data: invitations = [] } = useQuery({
+    queryKey: ["invitations", "sent", adminId],
+    queryFn: () => fetchSentInvitations(adminId),
+    enabled: !!adminId,
   });
 
   const stats = [
@@ -117,9 +127,41 @@ function AdminHomeView() {
                 <UserCheck size={18} className="text-violet" />
                 <h2 className="font-sora font-semibold text-ink">Sent invitations</h2>
               </div>
-              <span className="text-xs font-semibold text-slate">0 pending</span>
+              <span className="text-xs font-semibold text-slate">
+                {invitations.filter((i) => i.status === "PENDING").length} pending
+              </span>
             </div>
-            <p className="text-sm text-slate text-center py-10 m-auto">No invitations sent yet.</p>
+            {invitations.length === 0 ? (
+              <p className="text-sm text-slate text-center py-10 m-auto">No invitations sent yet.</p>
+            ) : (
+              <div className="divide-y divide-[#ece7f5]">
+                {invitations.map((inv) => (
+                  <div key={inv.id} className="flex items-center gap-3 px-6 py-4">
+                    <div className="w-9 h-9 rounded-full bg-violet/10 flex items-center justify-center shrink-0">
+                      <UserCheck size={16} className="text-violet" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-ink truncate">{inv.courseName}</p>
+                      <p className="text-xs text-slate truncate mt-0.5">
+                        {inv.topic?.subject?.name ?? "Course"} · to {inv.received?.name ?? "Teacher"}
+                      </p>
+                    </div>
+                    <span
+                      className={
+                        "shrink-0 px-2.5 py-1 rounded-full text-xs font-medium capitalize " +
+                        (inv.status === "ACCEPTED"
+                          ? "bg-emerald-50 text-emerald-600"
+                          : inv.status === "DECLINED"
+                            ? "bg-red-50 text-red-600"
+                            : "bg-amber-50 text-amber-600")
+                      }
+                    >
+                      {inv.status === "ACCEPTED" ? "Accepted" : inv.status === "DECLINED" ? "Declined" : "Pending"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Bell, Plus, Mail, BookOpen } from "lucide-react";
+import { Bell, Plus, Mail, BookOpen, Check, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchUserNotifications, fetchTopics, fetchSubjectTopics } from "../../../lib/api";
+import { fetchUserNotifications, fetchUserInvitations, fetchTopics, fetchSubjectTopics, markNotificationsRead } from "../../../lib/api";
+import { useRespondInvitation } from "../../../hooks/useMutations";
 import { MODAL, useNotification, useSection } from "@/store";
 import { useShowModal } from "@store";
 
@@ -31,9 +32,9 @@ function TopicCard({ topic, onClick }) {
           <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-violet/10 text-violet truncate">
             {topic.subject?.name ?? "General"}
           </span>
-          <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium capitalize ${topic.status === "approved" ? "bg-emerald-50 text-emerald-600" : topic.status === "denied" ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"}`}>
+          {/* <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium capitalize ${topic.status === "approved" ? "bg-emerald-50 text-emerald-600" : topic.status === "denied" ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"}`}>
             {topic.status}
-          </span>
+          </span>*/}
         </div>
 
         <h3 className="font-sora font-semibold text-base text-ink mt-3 truncate">
@@ -54,9 +55,10 @@ function TopicCard({ topic, onClick }) {
 }
 
 function TeacherSubjectsView({ selectedSubjectId, onTopicClick }) {
-  const { notification, notifications, unread, setNotification, setNotifications } = useNotification();
+  const { notification, notifications, unread, setNotification, setNotifications, markAllRead } = useNotification();
   const {section, setSection} = useSection()
   const { setModal } = useShowModal();
+  const respondInvitation = useRespondInvitation();
 
   const [params] = useSearchParams();
   const teacherId = Number(params.get("id") ?? 0);
@@ -69,11 +71,27 @@ function TeacherSubjectsView({ selectedSubjectId, onTopicClick }) {
     enabled: !!teacherId,
   });
 
+  const { data: invitations = [] } = useQuery({
+    queryKey: ["invitations", teacherId],
+    queryFn: () => fetchUserInvitations(teacherId),
+    enabled: !!teacherId,
+  });
+
+  const pendingInvitations = invitations.filter((i) => i.status === "PENDING");
+
   useEffect(() => {
     if (teacherId) {
       fetchUserNotifications(teacherId).then(setNotifications);
     }
   }, [teacherId, setNotifications]);
+
+  const toggleNotification = () => {
+    const next = !notification;
+    setNotification(next);
+    if (next && teacherId) {
+      markNotificationsRead(teacherId).then(() => markAllRead());
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -93,7 +111,7 @@ function TeacherSubjectsView({ selectedSubjectId, onTopicClick }) {
           )}
           <div className="relative z-50">
             <button
-              onClick={() => setNotification(!notification)}
+              onClick={toggleNotification}
               className="relative w-11 h-11 flex items-center justify-center text-ink hover:rounded-full transition-colors cursor-pointer"
             >
               <Bell size={22} />
@@ -104,7 +122,7 @@ function TeacherSubjectsView({ selectedSubjectId, onTopicClick }) {
               )}
             </button>
             {notification && (
-              <div className="absolute top-12 right-0 w-[340px] max-w-[90vw] bg-[#fdfcff] rounded-md border border-[#e9e2f5] shadow-lg shadow-[#2a2049]/10 overflow-hidden">
+              <div className="absolute top-12 right-0 w-[360px] max-w-[90vw] bg-[#fdfcff] rounded-md border border-[#e9e2f5] shadow-lg shadow-[#2a2049]/10 overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[#e9e2f5] bg-white">
                   <div>
                     <h3 className="font-semibold text-ink text-sm">Notifications</h3>
@@ -113,6 +131,48 @@ function TeacherSubjectsView({ selectedSubjectId, onTopicClick }) {
                     </p>
                   </div>
                 </div>
+
+                {pendingInvitations.length > 0 && (
+                  <div className="border-b border-[#e9e2f5] bg-violet/5">
+                    <p className="px-4 py-2 text-[11px] font-semibold text-violet uppercase tracking-wide">
+                      Pending invitations
+                    </p>
+                    <div className="px-4 pb-3 space-y-2">
+                      {pendingInvitations.map((inv) => (
+                        <div key={inv.id} className="rounded-lg border border-[#ece7f5] bg-white p-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-violet/10 flex items-center justify-center shrink-0">
+                              <Mail size={14} className="text-violet" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-ink truncate">{inv.courseName}</p>
+                              <p className="text-xs text-slate truncate">
+                                {inv.topic?.subject?.name ?? "Course"} · from {inv.sentBy?.name ?? "Admin"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 mt-2.5">
+                            <button
+                              onClick={() => respondInvitation.mutate({ id: inv.id, action: "accept" })}
+                              disabled={respondInvitation.isPending}
+                              className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold bg-emerald-500 text-white hover:bg-emerald-600 transition-colors cursor-pointer disabled:opacity-50"
+                            >
+                              <Check size={13} /> Accept
+                            </button>
+                            <button
+                              onClick={() => respondInvitation.mutate({ id: inv.id, action: "decline" })}
+                              disabled={respondInvitation.isPending}
+                              className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-red-600 border border-red-200 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
+                            >
+                              <X size={13} /> Decline
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="max-h-72 overflow-y-auto divide-y divide-[#ece7f5]">
                   {notifications.length === 0 ? (
                     <div className="py-12 flex flex-col items-center justify-center gap-3">

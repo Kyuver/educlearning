@@ -24,5 +24,10 @@ export const useNotification = create((set) => ({
     unread: Math.max(0, state.unread - 1),
   })),
 
+  markAllRead: () => set((state) => ({
+    notifications: state.notifications.map((n) => ({ ...n, status: "READ" })),
+    unread: 0,
+  })),
+
   clearAll: () => set({ notifications: [], unread: 0 }),
 }));
