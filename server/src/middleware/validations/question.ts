@@ -23,7 +23,7 @@ export const questionSchema = z.object({
 export const quizAttemptSchema = z.object({
   userId: z.number().int().min(1, 'user id required.'),
   quizId: z.number().int().min(1, 'quiz id required.'),
-  score: z.number().int().min(1, 'score required.'),
+  score: z.number().int().min(0, 'score required.'),
   totalQuestion: z.number().int().min(1, 'total question required,'),
-  submittedAnswers: z.array(z.string()).min(1, 'user answer list required.')
+  submittedAnswers: z.record(z.number().int(), z.number().int().min(0)).default({}),
 })

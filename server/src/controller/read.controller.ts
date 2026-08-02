@@ -98,6 +98,42 @@ export async function retrieveTopicQuizzes(req: any, res: any) {
   }
 }
 
+// attempts for one quiz (teachers reviewing student answers)
+export async function retrieveQuizAttempts(req: any, res: any) {
+  const { quizId } = req.params
+  try {
+    const data = await prisma.quizAttempt.findMany({
+      where: { quizId: Number(quizId) },
+      include: { user: true, quiz: { include: { questions: true } } },
+      orderBy: { createdAt: 'asc' },
+    })
+
+    return res.json({ status: 'success', msg: "successfully retrieved attempts", data: data })
+  }
+  catch (e: any) {
+    console.log(e.message)
+    return res.status(500).json({ status: 'error', msg: e.message })
+  }
+}
+
+// attempts of one user across quizzes (students seeing their own progress)
+export async function retrieveUserQuizAttempts(req: any, res: any) {
+  const { userId } = req.params
+  try {
+    const data = await prisma.quizAttempt.findMany({
+      where: { userId: Number(userId) },
+      include: { quiz: { include: { questions: true } } },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    return res.json({ status: 'success', msg: "successfully retrieved attempts", data: data })
+  }
+  catch (e: any) {
+    console.log(e.message)
+    return res.status(500).json({ status: 'error', msg: e.message })
+  }
+}
+
 // users base on role
 export async function retrieveUser(req: any, res: any) {  const { role } = req.params
   try {

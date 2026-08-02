@@ -58,6 +58,16 @@ export async function fetchTopicQuizzes(topicId) {
   return res.data;
 }
 
+export async function fetchQuizAttempts(quizId) {
+  const res = await api.get(`/api/quiz/${quizId}/attempts`);
+  return res.data;
+}
+
+export async function fetchUserQuizAttempts(userId) {
+  const res = await api.get(`/api/user/${userId}/quiz-attempts`);
+  return res.data;
+}
+
 // ----- users / notifications -----
 
 export async function fetchUsers(role) {
