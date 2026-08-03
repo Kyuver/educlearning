@@ -1,8 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowLeft, BookOpen, Pencil } from "lucide-react";
 import { fetchTopicQuizzes } from "../../../lib/api";
+import { MODAL, useShowModal } from "@store";
+import { useSetData } from "../../../store/useData";
 
 function AdminTopicDetailView({ topic, onBack }) {
+  const setModal = useShowModal((s) => s.setModal);
+  const setData = useSetData((s) => s.setData);
   const { data: quizzes = [], isLoading } = useQuery({
     queryKey: ["quizzes", topic?.id],
     queryFn: () => fetchTopicQuizzes(topic?.id),
@@ -15,17 +19,32 @@ function AdminTopicDetailView({ topic, onBack }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="cursor-pointer text-ink hover:opacity-70 transition-opacity"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          <h2 className="font-sora font-semibold text-xl text-ink">{topic?.title ?? "Topic"}</h2>
-          <p className="text-sm text-slate mt-0.5">{topic?.subject?.name ?? "Subject"}</p>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="cursor-pointer text-ink hover:opacity-70 transition-opacity"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h2 className="font-sora font-semibold text-xl text-ink">{topic?.title ?? "Topic"}</h2>
+            <p className="text-sm text-slate mt-0.5">{topic?.subject?.name ?? "Subject"}</p>
+          </div>
         </div>
+        <button
+          onClick={() => {
+            setData({
+              title: topic?.title ?? "",
+              content: topic?.content ?? "",
+              coverImage: topic?.coverImage ?? "",
+            });
+            setModal(MODAL.ADMIN_EDIT_TOPIC, topic);
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-ink text-white text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+        >
+          <Pencil size={16} /> Edit Topic
+        </button>
       </div>
 
       <div className="bg-white rounded-xl border border-[#ece7f5] p-6">

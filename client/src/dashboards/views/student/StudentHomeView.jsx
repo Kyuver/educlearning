@@ -6,6 +6,7 @@ function StudentHomeView({ onOpenTopic }) {
   const { data: topics = [], isLoading } = useQuery({
     queryKey: ["topics", "APPROVED"],
     queryFn: () => fetchTopics("APPROVED"),
+    select: (data) => data.filter((t) => t.teacherId),
   });
 
   return (

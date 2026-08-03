@@ -48,6 +48,11 @@ export async function fetchSubjectTopics(subjectId, status) {
 
 // ----- topics -----
 
+export async function fetchTeacherTopics(teacherId) {
+  const res = await api.get(`/api/teacher/${teacherId}/topics`);
+  return res.data;
+}
+
 export async function fetchTopics(status) {
   const res = await api.get(`/api/topic/${status}`);
   return res.data;

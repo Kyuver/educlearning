@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Bell, Plus, Mail, BookOpen, Check, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchUserNotifications, fetchUserInvitations, fetchTopics, fetchSubjectTopics, markNotificationsRead } from "../../../lib/api";
+import { fetchUserNotifications, fetchUserInvitations, fetchTeacherTopics, markNotificationsRead } from "../../../lib/api";
 import { useRespondInvitation } from "../../../hooks/useMutations";
 import { MODAL, useNotification, useSection } from "@/store";
 import { useShowModal } from "@store";
@@ -41,14 +41,9 @@ function TopicCard({ topic, onClick }) {
           {topic.title}
         </h3>
 
-        <div className="flex items-center gap-2 mt-3">
-          <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 text-xs font-semibold">
-            {(topic.teacher?.name ?? topic.teacherName ?? "?")[0]?.toUpperCase()}
-          </div>
-          <p className="text-md text-slate truncate">
-            {topic.teacher?.name ?? topic.teacherName ?? "Unknown"}
-          </p>
-        </div>
+        <p className="text-sm text-slate truncate mt-1">
+          {topic.subject?.name ?? "General"}
+        </p>
       </div>
     </div>
   );
@@ -64,12 +59,19 @@ function TeacherSubjectsView({ selectedSubjectId, onTopicClick }) {
   const teacherId = Number(params.get("id") ?? 0);
 
   const { data: topics = [], isLoading } = useQuery({
-    queryKey: ["topics", section, selectedSubjectId],
-    queryFn: () => selectedSubjectId
-      ? fetchSubjectTopics(selectedSubjectId, "APPROVED")
-      : fetchTopics(section.toUpperCase()),
+    queryKey: ["teacher-topics", section, teacherId, selectedSubjectId],
+    queryFn: () => fetchTeacherTopics(teacherId),
     enabled: !!teacherId,
   });
+
+  const filteredTopics = useMemo(() => {
+    return topics
+      .filter((t) =>
+        selectedSubjectId
+          ? t.status === "APPROVED" && t.subjectId === selectedSubjectId
+          : t.status === section.toUpperCase(),
+      )
+  }, [topics, section, selectedSubjectId]);
 
   const { data: invitations = [] } = useQuery({
     queryKey: ["invitations", teacherId],
@@ -214,7 +216,11 @@ function TeacherSubjectsView({ selectedSubjectId, onTopicClick }) {
           </div>
         </div>
       </div>
-      {!selectedSubjectId && (
+      {selectedSubjectId ? (
+        <h3 className="font-sora font-semibold text-lg text-ink">
+          Approved Topics
+        </h3>
+      ) : (
         <div className="flex gap-6 border-b border-[#ece7f5]">
           {["approved", "pending", "denied"].map((st) => (
             <button
@@ -233,12 +239,12 @@ function TeacherSubjectsView({ selectedSubjectId, onTopicClick }) {
           <div className="col-span-full flex items-center justify-center py-20">
             <div className="w-8 h-8 border-4 border-violet border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : topics.length === 0 ? (
+        ) : filteredTopics.length === 0 ? (
           <p className="text-sm text-slate col-span-full py-10 text-center min-h-[300px] flex items-center justify-center">
-            No {selectedSubjectId ? "approved" : section} topics yet.
+            {selectedSubjectId ? "No approved topics in this subject yet." : `No ${section} topics yet.`}
           </p>
         ) : (
-          topics.map((topic) => <TopicCard key={topic.id} topic={topic} onClick={() => {
+          filteredTopics.map((topic) => <TopicCard key={topic.id} topic={topic} onClick={() => {
             onTopicClick?.(topic)
           }} />)
         )}

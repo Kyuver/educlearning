@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Home, User } from "lucide-react";
 import DashboardLayout from "./DashboardLayout";
 import { useView, useShowModal, useSection } from "@store";
@@ -10,7 +10,8 @@ import TeacherAddTopicModal from "./views/teacher/TeacherAddTopicModal";
 import TeacherEditTopicModal from "./views/teacher/TeacherEditTopicModal";
 import TeacherDeleteTopicModal from "./views/teacher/TeacherDeleteTopicModal";
 import ConfirmLogoutModal from "../compontents/ConfirmLogoutModal";
-import { fetchSubjects } from "../lib/api";
+import { useSearchParams } from "react-router-dom";
+import { fetchTeacherTopics } from "../lib/api";
 import { useQuery } from "@tanstack/react-query";
 
 function TeacherDashboard() {
@@ -21,14 +22,26 @@ function TeacherDashboard() {
   const { modal, setModal, closeModal } = useShowModal();
   const {setSection} = useSection()
 
+  const [params] = useSearchParams();
+  const teacherId = Number(params.get("id") ?? 0);
+
   useEffect(() => {
     setSection("approved");
   }, [setSection]);
 
-  const { data: subjects = [] } = useQuery({
-    queryKey: ["subjects"],
-    queryFn: fetchSubjects,
+  const { data: teacherTopics = [] } = useQuery({
+    queryKey: ["teacher-topics-all", teacherId],
+    queryFn: () => fetchTeacherTopics(teacherId),
+    enabled: !!teacherId,
   });
+
+  const subjects = useMemo(() => {
+    const map = new Map();
+    teacherTopics.forEach((t) => {
+      if (t.subject) map.set(t.subject.id, t.subject);
+    });
+    return Array.from(map.values());
+  }, [teacherTopics]);
 
   const topItem = (
     <>

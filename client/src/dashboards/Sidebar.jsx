@@ -39,7 +39,7 @@ function Sidebar({ subjects, selectedSubjectId, onSelectSubject, topItem, onLogo
                 <li
                   key={s.id}
                   className={
-                    "px-5 py-2.5 pl-10 text-sm cursor-pointer " +
+                    "px-5 py-2.5 pl-10 text-sm cursor-pointer first-letter:uppercase " +
                     (selectedSubjectId === s.id
                       ? "bg-white/14 text-white border-l-3 border-gold"
                       : "border-l-3 border-transparent hover:bg-white/6")

@@ -82,6 +82,26 @@ export async function retrieveTopicsByStatus(req: any, res: any) {
   }
 }
 
+// topics assigned to a specific teacher
+export async function retrieveTeacherTopics(req: any, res: any) {
+  const { teacherId } = req.params
+  try {
+    const data = await prisma.topic.findMany({
+      where: {
+        isDeleted: false,
+        teacherId: Number(teacherId),
+      },
+      include: { subject: true, teacher: true },
+    })
+
+    return res.json({ status: 'success', msg: "successfully retrieved teacher topics", data: data })
+  }
+  catch (e: any) {
+    console.log(e.message)
+    return res.status(500).json({ status: 'error', msg: e.message })
+  }
+}
+
 // quizzes of one topic, with their questions
 export async function retrieveTopicQuizzes(req: any, res: any) {
   const { topicId } = req.params

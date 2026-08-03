@@ -7,6 +7,7 @@ function StudentSubjectTopicsView({ selectedSubjectId, onTopicClick }) {
     queryKey: ["topics", selectedSubjectId, "APPROVED"],
     queryFn: () => fetchSubjectTopics(selectedSubjectId, "APPROVED"),
     enabled: !!selectedSubjectId,
+    select: (data) => data.filter((t) => t.teacherId),
   });
 
   const { data: subject } = useQuery({

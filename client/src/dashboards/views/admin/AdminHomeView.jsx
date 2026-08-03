@@ -1,7 +1,6 @@
 import { Send, UserCheck, CheckCircle2, Plus, BookOpen, Layers, Users, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-import { useSetData } from "../../../store/useData";
 import { useCreateData } from "../../../hooks/useMutations";
 import { fetchSubjects, fetchUsers, get, fetchSentInvitations } from "../../../lib/api";
 import { useMemo } from "react";
@@ -21,8 +20,8 @@ function AdminHomeView() {
   const setModal = useShowModal((s) => s.setModal);
   const section = useSection((s) => s.section);
   const setSection = useSection((s) => s.setSection);
-  const { setData, data } = useSetData();
-  const createSubject = useCreateData(() => setData(""));
+  const [subjectName, setSubjectName] = useState("");
+  const createSubject = useCreateData(() => setSubjectName(""));
   const [viewTopic, setViewTopic] = useState(null);
 
   const { data: subjects = [] } = useQuery({
@@ -171,12 +170,13 @@ function AdminHomeView() {
           <div className="flex gap-3 w-full">
             <input
               type="text"
-              onChange={(e) => setData(e.target.value)}
+              value={subjectName}
+              onChange={(e) => setSubjectName(e.target.value)}
               placeholder="New subject name"
-              className="flex-4 border border-[#ece7f5] rounded-lg px-4 py-2.5 text-sm outline-none focus:border-violet"
+              className="flex-4 border border-[#ece7f5] rounded-lg px-4 py-2.5 text-sm text-slate-900 bg-white placeholder:text-slate-400 outline-none focus:border-violet"
             />
             <button
-              onClick={() => createSubject.mutate({ table: "subject", data: { name: data } })}
+              onClick={() => createSubject.mutate({ table: "subject", data: { name: subjectName } })}
               className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-violet text-white text-sm font-semibold hover:opacity-90 transition-colors cursor-pointer whitespace-nowrap"
             >
               <Plus size={16} /> Add Subject

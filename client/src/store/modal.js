@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 export const MODAL = {
   ADMIN_ADD_TOPIC: "AdminAddTopicModal",
+  ADMIN_EDIT_TOPIC: "AdminEditTopicModal",
   ADMIN_INVITE_TEACHER: "AdminInviteTeacherModal",
   ADD_QUIZ: "AddQuizFormModal",
   TEACHER_ADD_TOPIC: "TeacherAddTopicModal",

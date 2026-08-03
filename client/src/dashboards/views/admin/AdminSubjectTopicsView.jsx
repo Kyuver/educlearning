@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, Plus } from "lucide-react";
 import { useShowModal, MODAL } from "@store";
+import { useSetData } from "../../../store/useData";
 import { fetchSubjectTopics, fetchSubject } from "../../../lib/api";
 
 function AdminSubjectTopicsView({ selectedSubjectId, onTopicClick }) {
   const { setModal } = useShowModal()
+  const setData = useSetData((s) => s.setData)
 
   const { data: topics = [], isLoading } = useQuery({
     queryKey: ["topics", selectedSubjectId, "APPROVED"],
@@ -28,7 +30,10 @@ function AdminSubjectTopicsView({ selectedSubjectId, onTopicClick }) {
           <p className="text-sm text-slate mt-1">{topics.length} topics</p>
         </div>
         <button
-          onClick={() => setModal(MODAL.ADMIN_ADD_TOPIC, selectedSubjectId)}
+          onClick={() => {
+            setData({});
+            setModal(MODAL.ADMIN_ADD_TOPIC, selectedSubjectId);
+          }}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet text-white text-sm font-semibold hover:opacity-90 transition-colors cursor-pointer"
         >
           <Plus size={17} /> Add Topic

@@ -7,6 +7,7 @@ import AdminSubjectTopicsView from "./views/admin/AdminSubjectTopicsView";
 import AdminTopicDetailView from "./views/admin/AdminTopicDetailView";
 import AdminInviteTeacherModal from "./views/admin/AdminInviteTeacherModal";
 import AddTopicModal from "./views/shared/AddTopicModal";
+import AdminEditTopicModal from "./views/shared/AdminEditTopicModal";
 import ConfirmLogoutModal from "../compontents/ConfirmLogoutModal";
 
 function AdminDashboard() {
@@ -63,6 +64,7 @@ function AdminDashboard() {
       {view === "dashboard" && !selectedSubjectId && <AdminHomeView />}
       {modal === "AdminInviteTeacherModal" && <AdminInviteTeacherModal />}
       {modal === "AdminAddTopicModal" && <AddTopicModal />}
+      {modal === "AdminEditTopicModal" && <AdminEditTopicModal />}
       <ConfirmLogoutModal
         open={modal === "ConfirmLogoutModal"}
         onCancel={() => closeModal()}
